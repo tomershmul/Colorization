@@ -10,7 +10,6 @@ from PIL import Image
 import os
 
 scale_transform = transforms.Compose([
-    #transforms.Scale(256),
     transforms.Resize(256),
     transforms.RandomCrop(224),
     #transforms.ToTensor()
@@ -27,9 +26,9 @@ class TrainImageFolder(data.Dataset):
             img=Image.open(self.data_dir+'/'+self.file_list[index])
             if self.transform is not None:
                 img_original = self.transform(img)
-                #img_resize=transforms.Scale(56)(img_original)
-                img_resize = transforms.Resize(56)(img_original)
+                img_resize=transforms.Resize(56)(img_original)
                 img_original = np.asarray(img_original)
+                #print('image ', self.file_list[index],img_original.shape)
                 img_lab = rgb2lab(img_resize)
                 #img_lab = (img_lab + 128) / 255
                 img_ab = img_lab[:, :, 1:3]

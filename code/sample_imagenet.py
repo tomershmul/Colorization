@@ -31,10 +31,10 @@ def load_image(image_path,transform=None):
     return image,image_small
 
 def main():
-    data_dir = "../data/"
+    data_dir = "../data/val"
     dirs=os.listdir(data_dir)
     color_model = nn.DataParallel(Color_model()).cuda().eval()
-    color_model.load_state_dict(torch.load('../model/models/model-7-700.ckpt'))
+    color_model.load_state_dict(torch.load('../model/models/model-50-16.ckpt'))
      
     for file in dirs:
         image,image_small=load_image(data_dir+'/'+file, scale_transform)
