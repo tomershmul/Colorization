@@ -115,8 +115,8 @@ if __name__ == '__main__':
     # Model parameters
     parser.add_argument('--num_epochs_load', type = int, default = 0)
     parser.add_argument('--num_epochs', type = int, default = 50)
-    parser.add_argument('--batch_size', type = int, default = 64)
-    parser.add_argument('--num_workers', type = int, default = 8)
+    parser.add_argument('--batch_size', type = int, default = 16)
+    parser.add_argument('--num_workers', type = int, default = 4)
     parser.add_argument('--learning_rate', type = float, default = 1e-4)
     args = parser.parse_args()
     print(args)

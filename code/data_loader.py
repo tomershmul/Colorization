@@ -24,20 +24,21 @@ class TrainImageFolder(data.Dataset):
     def __getitem__(self, index):
         #try:
             img=Image.open(self.data_dir+'/'+self.file_list[index])
-            if self.transform is not None:
-                img_original = self.transform(img)
-                img_resize=transforms.Resize(56)(img_original)
-                img_original = np.asarray(img_original)
-                #print('image ', self.file_list[index],img_original.shape)
-                img_lab = rgb2lab(img_resize)
-                #img_lab = (img_lab + 128) / 255
-                img_ab = img_lab[:, :, 1:3]
-                img_ab = torch.from_numpy(img_ab.transpose((2, 0, 1)))
-                #print('img_ori',img_original.shape)
-                #print('img_ab',img_ab.size())
-                img_original = rgb2lab(img_original)[:,:,0]-50.
-                img_original = torch.from_numpy(img_original)
-                return img_original, img_ab
+            if (img.layers == 3):
+                if self.transform is not None:
+                    img_original = self.transform(img)
+                    img_resize=transforms.Resize(56)(img_original)
+                    img_original = np.asarray(img_original)
+                    #print('image ', self.file_list[index],img_original.shape)
+                    img_lab = rgb2lab(img_resize)
+                    #img_lab = (img_lab + 128) / 255
+                    img_ab = img_lab[:, :, 1:3]
+                    img_ab = torch.from_numpy(img_ab.transpose((2, 0, 1)))
+                    #print('img_ori',img_original.shape)
+                    #print('img_ab',img_ab.size())
+                    img_original = rgb2lab(img_original)[:,:,0]-50.
+                    img_original = torch.from_numpy(img_original)
+                    return img_original, img_ab
         #except:
         #    pass
     def __len__(self):
