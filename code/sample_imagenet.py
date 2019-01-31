@@ -18,12 +18,12 @@ scale_transform = transforms.Compose([
     transforms.RandomCrop(224),
 ])
 
-def load_image(image_path,transform=None):
+def load_image(image_path,transform=None, model_output_size):
     image = Image.open(image_path)
     
     if transform is not None:
         image = transform(image)
-    image_small=transforms.Scale(56)(image)
+    image_small=transforms.Resize(model_output_size)(image)
     image_small=np.expand_dims(rgb2lab(image_small)[:,:,0],axis=-1)
     image=rgb2lab(image)[:,:,0]-50.
     image=torch.from_numpy(image).unsqueeze(0)
@@ -31,18 +31,28 @@ def load_image(image_path,transform=None):
     return image,image_small
 
 def main():
+    # CIFAR10 vs ImageNet changes
+    work_dataset = "CIFAR10"
+    if work_dataset == "CIFAR10":
+        model_output_size = 32 # TODO 32 CIFAR, 56 in ImageNet
+        upscale = 2
+    else:
+        model_output_size = 56 # TODO 32 CIFAR, 56 in ImageNet
+        upscale = 4
+
+
     data_dir = "../data/val"
     dirs=os.listdir(data_dir)
     color_model = nn.DataParallel(Color_model()).cuda().eval()
     color_model.load_state_dict(torch.load('../model/models/model-50-16.ckpt'))
      
     for file in dirs:
-        image,image_small=load_image(data_dir+'/'+file, scale_transform)
+        image,image_small=load_image(data_dir+'/'+file, scale_transform, model_output_size=model_output_size) #TODO CIFAR 32, imagenet 56
         image=image.unsqueeze(0).float().cuda()
         img_ab_313=color_model(image)
         out_max=np.argmax(img_ab_313[0].cpu().data.numpy(),axis=0)
         print('out_max',set(out_max.flatten()))
-        color_img=decode(image,img_ab_313)
+        color_img=decode(image,img_ab_313,upscale=upscale)
         #print(color_img)
         #break
         color_name = '../data/colorimg/' + file

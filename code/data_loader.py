@@ -17,17 +17,18 @@ scale_transform = transforms.Compose([
 
 
 class TrainImageFolder(data.Dataset):
-    def __init__(self, data_dir, transform):
-       self.file_list=os.listdir(data_dir)
-       self.transform=transform
-       self.data_dir=data_dir
+    def __init__(self, data_dir, transform, model_output_size):
+        self.file_list=os.listdir(data_dir)
+        self.transform=transform
+        self.data_dir=data_dir
+        self.model_output_size = model_output_size
     def __getitem__(self, index):
         #try:
             img=Image.open(self.data_dir+'/'+self.file_list[index])
             if (img.layers == 3):
                 if self.transform is not None:
                     img_original = self.transform(img)
-                    img_resize=transforms.Resize(56)(img_original)
+                    img_resize=transforms.Resize(self.model_output_size)(img_original)
                     img_original = np.asarray(img_original)
                     #print('image ', self.file_list[index],img_original.shape)
                     img_lab = rgb2lab(img_resize)

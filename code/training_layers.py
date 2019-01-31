@@ -293,7 +293,8 @@ def unflatten_2d_array(pts_flt, pts_nd, axis=1, squeeze=False):
     return pts_out
 
 
-def decode(data_l, conv8_313, rebalance=1):
+def decode(data_l, conv8_313, rebalance=1, upscale=2):
+    ''' upscale==4 for imagenet, upscale==2 for cifar'''
     #print('data_l',type(data_l))
     #print('shape',data_l.shape)
     #np.save('data_l.npy',data_l)
@@ -313,7 +314,7 @@ def decode(data_l, conv8_313, rebalance=1):
     #data_ab=np.transpose(data_ab,axes=(1,2,0))
     #data_l=np.transpose(data_l,axes=(1,2,0))
     #data_ab = resize(data_ab, (224, 224,2))
-    data_ab=data_ab.repeat(4, axis=0).repeat(4, axis=1)
+    data_ab=data_ab.repeat(upscale, axis=0).repeat(4, axis=1)
     
     img_lab = np.concatenate((data_l, data_ab), axis=-1)
     img_rgb = color.lab2rgb(img_lab)

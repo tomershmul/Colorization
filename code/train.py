@@ -19,12 +19,22 @@ original_transform = transforms.Compose([
 
 
 def main(args):
+    # CIFAR10 vs ImageNet changes
+    work_dataset = "CIFAR10"
+    if work_dataset == "CIFAR10":
+        model_output_size = 32 # TODO 32 CIFAR, 56 in ImageNet
+        upscale = 2
+    else:
+        model_output_size = 56 # TODO 32 CIFAR, 56 in ImageNet
+        upscale = 4
+
+
     # Create model directory
     if not os.path.exists(args.model_path):
         os.makedirs(args.model_path)
 
     # Image preprocessing, normalization for the pretrained resnet
-    train_set = TrainImageFolder(args.image_dir, original_transform)
+    train_set = TrainImageFolder(args.image_dir, original_transform, model_output_size)
 
     # Build data loader
     data_loader = torch.utils.data.DataLoader(train_set, batch_size = args.batch_size, shuffle = True, num_workers = args.num_workers)
