@@ -14,11 +14,12 @@ import torch.nn.functional as F
 import os
 
 scale_transform = transforms.Compose([
-    transforms.Scale(256),
-    transforms.RandomCrop(224),
+    transforms.Resize((64, 64)),
+    # transforms.RandomCrop(224),
 ])
 
-def load_image(image_path,transform=None, model_output_size):
+
+def load_image(image_path, model_output_size, transform=None,):
     image = Image.open(image_path)
     
     if transform is not None:
@@ -44,15 +45,15 @@ def main():
     data_dir = "../data/val"
     dirs=os.listdir(data_dir)
     color_model = nn.DataParallel(Color_model()).cuda().eval()
-    color_model.load_state_dict(torch.load('../model/models/model-50-16.ckpt'))
+    color_model.load_state_dict(torch.load('../model/models/model-10-782.ckpt'))
      
     for file in dirs:
-        image,image_small=load_image(data_dir+'/'+file, scale_transform, model_output_size=model_output_size) #TODO CIFAR 32, imagenet 56
+        image,image_small=load_image(data_dir+'/'+file, model_output_size=model_output_size, transform=scale_transform) #TODO CIFAR 32, imagenet 56
         image=image.unsqueeze(0).float().cuda()
         img_ab_313=color_model(image)
-        out_max=np.argmax(img_ab_313[0].cpu().data.numpy(),axis=0)
-        print('out_max',set(out_max.flatten()))
-        color_img=decode(image,img_ab_313,upscale=upscale)
+        # out_max=np.argmax(img_ab_313[0].cpu().data.numpy(),axis=0)
+        # print('out_max',set(out_max.flatten()))
+        color_img = decode(image, img_ab_313, upscale=upscale)
         #print(color_img)
         #break
         color_name = '../data/colorimg/' + file
