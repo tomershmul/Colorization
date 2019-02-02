@@ -11,12 +11,9 @@ from model import Color_model
 import time
 
 original_transform = transforms.Compose([
-    transforms.Resize(256),
-    transforms.RandomCrop(224),
+    transforms.Resize(64),
     transforms.RandomHorizontalFlip(),
-    #transforms.ToTensor()
 ])
-
 
 def main(args):
     # CIFAR10 vs ImageNet changes
@@ -27,7 +24,6 @@ def main(args):
     else:
         model_output_size = 56 # TODO 32 CIFAR, 56 in ImageNet
         upscale = 4
-
 
     # Create model directory
     if not os.path.exists(args.model_path):
@@ -54,7 +50,12 @@ def main(args):
 
     # Train the models
     total_step = len(data_loader)
+    lr_step = int(args.num_epochs / 4)
     for epoch in range(args.num_epochs):
+        if epoch % lr_step == 0:
+            for g in optimizer.param_groups:
+                g['lr'] = g['lr'] / 2
+
         epoch_start_time = time.time()
         for i, (images, img_ab) in enumerate(data_loader):
             try:
@@ -95,11 +96,6 @@ def main(args):
                     print('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}, Time: {:.4f}, fps: {:.4f}'
                       .format(args.num_epochs_load+epoch, args.num_epochs_load+args.num_epochs, i, total_step, loss.item(), step_time, step_fps))
 
-#                # Save the model checkpoints
-#                if (epoch % args.save_step == args.save_step-1) and (i == total_step-1):
-#                    torch.save(model.state_dict(), os.path.join(
-#                        args.model_path, 'model-{}-{}.ckpt'.format(epoch + 1, i + 1)))
-#                    print('Model saved: ', 'model-{}-{}.ckpt'.format(epoch + 1, i + 1))
             except Exception as ex:
                 print (str(ex))
                 pass
@@ -108,6 +104,7 @@ def main(args):
             torch.save(model.state_dict(), os.path.join(
                 args.model_path, 'model-{}-{}.ckpt'.format(args.num_epochs_load+epoch + 1, i + 1)))
             print('Model saved: ', 'model-{}-{}.ckpt'.format(args.num_epochs_load+epoch + 1, i + 1))
+
         epoch_time = time.time() - epoch_start_time
         epoch_fps = args.batch_size * total_step / epoch_time
         print('Epoch END [{}/{}], Step [{}/{}], Loss: {:.4f}, Time: {:.4f}, fps: {:.4f}'
