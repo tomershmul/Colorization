@@ -11,8 +11,8 @@ from model import Color_model
 import time
 
 original_transform = transforms.Compose([
-    transforms.Resize(256),
-    transforms.RandomCrop(224),
+    transforms.Resize(64),
+    # transforms.RandomCrop(224),
     transforms.RandomHorizontalFlip(),
     #transforms.ToTensor()
 ])
@@ -118,14 +118,16 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--model_path', type = str, default = '../model/models/', help = 'path for saving trained models')
     parser.add_argument('--crop_size', type = int, default = 224, help = 'size for randomly cropping images')
-    parser.add_argument('--image_dir', type = str, default = '../data/images256', help = 'directory for resized images')
-    parser.add_argument('--log_step', type = int, default = 1, help = 'step size for prining log info')
-    parser.add_argument('--save_step', type = int, default = 1, help = 'step size for saving trained models')
+    #parser.add_argument('--image_dir', type = str, default = '../data/images256', help = 'directory for resized images')
+    parser.add_argument('--image_dir', type=str, default='../data/imagenet64', help='directory for resized images')
+    # parser.add_argument('--image_dir', type=str, default='../data/temp', help='directory for resized images')
+    parser.add_argument('--log_step', type = int, default = 10, help = 'step size for prining log info')
+    parser.add_argument('--save_step', type = int, default = 5, help = 'step size for saving trained models')
 
     # Model parameters
     parser.add_argument('--num_epochs_load', type = int, default = 0)
-    parser.add_argument('--num_epochs', type = int, default = 50)
-    parser.add_argument('--batch_size', type = int, default = 16)
+    parser.add_argument('--num_epochs', type = int, default = 100)
+    parser.add_argument('--batch_size', type = int, default = 64)
     parser.add_argument('--num_workers', type = int, default = 4)
     parser.add_argument('--learning_rate', type = float, default = 1e-4)
     args = parser.parse_args()
