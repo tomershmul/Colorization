@@ -47,7 +47,7 @@ class Color_model(nn.Module):
             nn.ReLU(),
             nn.Conv2d(in_channels = 256, out_channels = 256, kernel_size = 3, stride = 1, padding = 1),
             nn.ReLU(),
-            nn.BatchNorm2d(num_features = 512),
+            nn.BatchNorm2d(num_features = 256),
             # conv5
             nn.Conv2d(in_channels = 256, out_channels = 512, kernel_size = 3, stride = 1, padding = 2, dilation = 2),
             nn.ReLU(),
