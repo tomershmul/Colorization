@@ -41,7 +41,7 @@ def main(args):
     # Build the models
     model=nn.DataParallel(Color_model()).cuda()
     if args.num_epochs_load != 0:
-        model.load_state_dict(torch.load('../model/models/model-{}-2500.ckpt'.format(args.num_epochs_load))) # TODO take from input arg
+        model.load_state_dict(torch.load('../model/models/model-{}-800.ckpt'.format(args.num_epochs_load))) # TODO take from input arg
     encode_layer=NNEncLayer()
     boost_layer=PriorBoostLayer()
     nongray_mask=NonGrayMaskLayer()
@@ -57,11 +57,12 @@ def main(args):
     if lr_step == 0:
         lr_step = args.num_epochs
     for epoch in range(args.num_epochs):
-        if epoch % lr_step == 0:
-            for g in optimizer.param_groups:
-                print('Learning Rate: {:.4f}'.format(g['lr']))
-                g['lr'] = g['lr'] / 2
-                print('Updated Learning Rate: {:.4f}'.format(g['lr']))
+        if epoch > 0:
+            if epoch % lr_step == 0:
+                for g in optimizer.param_groups:
+                    print('Learning Rate: {:.8f}'.format(g['lr']))
+                    g['lr'] = g['lr'] / 10
+                    print('Updated Learning Rate: {:.8f}'.format(g['lr']))
 
         epoch_start_time = time.time()
         for i, (images, img_ab) in enumerate(data_loader):
@@ -118,7 +119,7 @@ if __name__ == '__main__':
     # Model parameters
     parser.add_argument('--num_epochs_load', type = int, default = 0)
     parser.add_argument('--num_epochs', type = int, default = 50)
-    parser.add_argument('--batch_size', type = int, default = 64)
+    parser.add_argument('--batch_size', type = int, default = 200)
     parser.add_argument('--num_workers', type = int, default = 16)
     parser.add_argument('--learning_rate', type = float, default = 1e-4)
     args = parser.parse_args()
