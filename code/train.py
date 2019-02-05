@@ -11,7 +11,7 @@ from model import Color_model
 import time
 
 original_transform = transforms.Compose([
-    transforms.Resize(64),
+    transforms.Resize((64, 64)),
     # transforms.RandomCrop(224),
     transforms.RandomHorizontalFlip(),
     #transforms.ToTensor()
@@ -41,7 +41,7 @@ def main(args):
     # Build the models
     model=nn.DataParallel(Color_model()).cuda()
     if args.num_epochs_load != 0:
-        model.load_state_dict(torch.load('../model/models/model-{}-16.ckpt'.format(args.num_epochs_load))) # TODO take from input arg
+        model.load_state_dict(torch.load('../model/models/model-{}-2500.ckpt'.format(args.num_epochs_load))) # TODO take from input arg
     encode_layer=NNEncLayer()
     boost_layer=PriorBoostLayer()
     nongray_mask=NonGrayMaskLayer()
@@ -54,10 +54,14 @@ def main(args):
     # Train the models
     total_step = len(data_loader)
     lr_step = int(args.num_epochs / 4)
+    if lr_step == 0:
+        lr_step = args.num_epochs
     for epoch in range(args.num_epochs):
         if epoch % lr_step == 0:
             for g in optimizer.param_groups:
+                print('Learning Rate: {:.4f}'.format(g['lr']))
                 g['lr'] = g['lr'] / 2
+                print('Updated Learning Rate: {:.4f}'.format(g['lr']))
 
         epoch_start_time = time.time()
         for i, (images, img_ab) in enumerate(data_loader):
@@ -66,27 +70,14 @@ def main(args):
                 # Set mini-batch dataset
                 images = images.unsqueeze(1).float().cuda()
                 img_ab = img_ab.float()
-                #print('img_ab',img_ab.shape)
                 encode,max_encode=encode_layer.forward(img_ab)
-                #print('max_encode',max_encode.shape)
                 targets=torch.Tensor(max_encode).long().cuda()
-                #print('targets',targets.size())
-                #print('set_tar',set(targets[0].cpu().data.numpy().flatten()))
                 boost=torch.Tensor(boost_layer.forward(encode)).float().cuda()
                 mask=torch.Tensor(nongray_mask.forward(img_ab)).float().cuda()
                 boost_nongray=boost*mask
-                outputs = model(images)#.log()
-                output=outputs[0].cpu().data.numpy()
-                #print('outputs',outputs.size())
-                out_max=np.argmax(output,axis=0)
-                #print('out_max',out_max)
-                #print('set',set(out_max.flatten()))
+                outputs = model(images)
+
                 loss = (criterion(outputs,targets)*(boost_nongray.squeeze(1))).mean()
-                #loss=criterion(outputs,targets)
-                #print('loss',loss.size())
-                #print('boost',boost_nongray.squeeze(1).size())
-                #multi=loss*boost_nongray.squeeze(1)
-                #print('mult',multi.size())
                 model.zero_grad()
                 
                 loss.backward()
@@ -119,16 +110,16 @@ if __name__ == '__main__':
     parser.add_argument('--model_path', type = str, default = '../model/models/', help = 'path for saving trained models')
     parser.add_argument('--crop_size', type = int, default = 224, help = 'size for randomly cropping images')
     #parser.add_argument('--image_dir', type = str, default = '../data/images256', help = 'directory for resized images')
-    # parser.add_argument('--image_dir', type=str, default='../data/imagenet64', help='directory for resized images')
-    parser.add_argument('--image_dir', type=str, default='../data/temp', help='directory for resized images')
-    parser.add_argument('--log_step', type = int, default = 10, help = 'step size for prining log info')
+    parser.add_argument('--image_dir', type=str, default='../data/imagenet64', help='directory for resized images')
+    # parser.add_argument('--image_dir', type=str, default='../data/imagenet128', help='directory for resized images')
+    parser.add_argument('--log_step', type = int, default = 100, help = 'step size for prining log info')
     parser.add_argument('--save_step', type = int, default = 5, help = 'step size for saving trained models')
 
     # Model parameters
     parser.add_argument('--num_epochs_load', type = int, default = 0)
-    parser.add_argument('--num_epochs', type = int, default = 5)
-    parser.add_argument('--batch_size', type = int, default = 2)
-    parser.add_argument('--num_workers', type = int, default = 4)
+    parser.add_argument('--num_epochs', type = int, default = 50)
+    parser.add_argument('--batch_size', type = int, default = 64)
+    parser.add_argument('--num_workers', type = int, default = 16)
     parser.add_argument('--learning_rate', type = float, default = 1e-4)
     args = parser.parse_args()
     print(args)
