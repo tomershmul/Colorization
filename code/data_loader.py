@@ -1,10 +1,10 @@
 from torchvision import datasets, transforms
 from skimage.color import rgb2lab, rgb2gray, gray2rgb
-from skimage import io
+# from skimage import io
 import torch.utils.data as data
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
+# import torch.nn as nn
+# import torch.nn.functional as F
 import numpy as np
 from PIL import Image
 import os
@@ -55,19 +55,19 @@ class TrainImageFolder(data.Dataset):
     def __len__(self):
         return len(self.file_list)
 
-
-class ValImageFolder(data.Dataset):
-    def __init__(self,data_dir):
-        self.file_list=os.listdir(data_dir)
-        self.data_dir=data_dir
-
-    def __getitem__(self, index):
-        img=Image.open(self.data_dir+'/'+self.file_list[index])
-        img_scale = scale_transform(img)
-        img_scale = np.asarray(img_scale)
-        img_scale = rgb2gray(img_scale)
-        img_scale = torch.from_numpy(img_scale)
-        return img_scale
-
-    def __len__(self):
-        return len(self.file_list)
+#
+# class ValImageFolder(data.Dataset):
+#     def __init__(self,data_dir):
+#         self.file_list=os.listdir(data_dir)
+#         self.data_dir=data_dir
+#
+#     def __getitem__(self, index):
+#         img=Image.open(self.data_dir+'/'+self.file_list[index])
+#         img_scale = scale_transform(img)
+#         img_scale = np.asarray(img_scale)
+#         img_scale = rgb2gray(img_scale)
+#         img_scale = torch.from_numpy(img_scale)
+#         return img_scale
+#
+#     def __len__(self):
+#         return len(self.file_list)

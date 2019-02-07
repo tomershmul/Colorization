@@ -1,6 +1,6 @@
 import torch
-from torch.autograd import Variable
-from skimage.color import lab2rgb
+# from torch.autograd import Variable
+# from skimage.color import lab2rgb
 from model import Color_model
 #from data_loader import ValImageFolder
 import numpy as np
@@ -10,7 +10,7 @@ from PIL import Image
 import scipy.misc
 from torchvision import datasets, transforms
 from training_layers import decode
-import torch.nn.functional as F
+# import torch.nn.functional as F
 import os
 
 scale_transform = transforms.Compose([
@@ -45,7 +45,7 @@ def main():
     data_dir = "../data/val"
     dirs=os.listdir(data_dir)
     color_model = nn.DataParallel(Color_model()).cuda().eval()
-    color_model.load_state_dict(torch.load('../model/models/model-50-800.ckpt'))
+    color_model.load_state_dict(torch.load('../model/models/model-65-800.ckpt'))
      
     for file in dirs:
         image,image_small=load_image(data_dir+'/'+file, model_output_size=model_output_size, transform=scale_transform) #TODO CIFAR 32, imagenet 56

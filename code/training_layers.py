@@ -1,15 +1,14 @@
-# coding:utf-8
 from __future__ import absolute_import
 from __future__ import unicode_literals
 import numpy as np
-import warnings
+# import warnings
 import torch.nn.functional as F
 import os
-from torchvision import transforms
+# from torchvision import transforms
 import sklearn.neighbors as nn
-from skimage.transform import resize
+# from skimage.transform import resize
 from skimage import color
-import torch
+# import torch
 
 class NNEncLayer(object):
     ''' Layer which encodes ab map into Q colors
@@ -84,39 +83,39 @@ class NonGrayMaskLayer(object):
                            na(), na(), na()].astype('float')
 
 
-class ClassRebalanceMultLayer(object):
-    ''' INPUTS
-        bottom[0]   NxMxXxY     feature map
-        bottom[1]   Nx1xXxY     boost coefficients
-    OUTPUTS
-        top[0]      NxMxXxY     on forward, gets copied from bottom[0]
-    FUNCTIONALITY
-        On forward pass, top[0] passes bottom[0]
-        On backward pass, bottom[0] gets boosted by bottom[1]
-        through pointwise multiplication (with singleton expansion) '''
-
-    def reshape(self, bottom, top):
-        i = 0
-        if (bottom[i].data.ndim == 1):
-            top[i].reshape(bottom[i].data.shape[0])
-        elif (bottom[i].data.ndim == 2):
-            top[i].reshape(bottom[i].data.shape[0], bottom[i].data.shape[1])
-        elif (bottom[i].data.ndim == 4):
-            top[i].reshape(bottom[i].data.shape[0], bottom[i].data.shape[1], bottom[i].data.shape[2],
-                           bottom[i].data.shape[3])
-
-    def forward(self, x):
-        # output equation to negative of inputs
-        # top[0].data[...] = bottom[0].data[...]
-        return x
-        # top[0].data[...] = bottom[0].data[...]*bottom[1].data[...] # this was bad, would mess up the gradients going up
-
-        # def backward(self, top, propagate_down, bottom):
-        #     for i in range(len(bottom)):
-        #         if not propagate_down[i]:
-        #             continue
-        #         bottom[0].diff[...] = top[0].diff[...] * bottom[1].data[...]
-        # print 'Back-propagating class rebalance, %i'%i
+# class ClassRebalanceMultLayer(object):
+#     ''' INPUTS
+#         bottom[0]   NxMxXxY     feature map
+#         bottom[1]   Nx1xXxY     boost coefficients
+#     OUTPUTS
+#         top[0]      NxMxXxY     on forward, gets copied from bottom[0]
+#     FUNCTIONALITY
+#         On forward pass, top[0] passes bottom[0]
+#         On backward pass, bottom[0] gets boosted by bottom[1]
+#         through pointwise multiplication (with singleton expansion) '''
+#
+#     def reshape(self, bottom, top):
+#         i = 0
+#         if (bottom[i].data.ndim == 1):
+#             top[i].reshape(bottom[i].data.shape[0])
+#         elif (bottom[i].data.ndim == 2):
+#             top[i].reshape(bottom[i].data.shape[0], bottom[i].data.shape[1])
+#         elif (bottom[i].data.ndim == 4):
+#             top[i].reshape(bottom[i].data.shape[0], bottom[i].data.shape[1], bottom[i].data.shape[2],
+#                            bottom[i].data.shape[3])
+#
+#     def forward(self, x):
+#         # output equation to negative of inputs
+#         # top[0].data[...] = bottom[0].data[...]
+#         return x
+#         # top[0].data[...] = bottom[0].data[...]*bottom[1].data[...] # this was bad, would mess up the gradients going up
+#
+#         # def backward(self, top, propagate_down, bottom):
+#         #     for i in range(len(bottom)):
+#         #         if not propagate_down[i]:
+#         #             continue
+#         #         bottom[0].diff[...] = top[0].diff[...] * bottom[1].data[...]
+#         # print 'Back-propagating class rebalance, %i'%i
 
 
 # ***************************

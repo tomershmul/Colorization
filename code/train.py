@@ -2,10 +2,11 @@ import argparse
 import os
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
+# import torch.nn.functional as F
 from torchvision import transforms
-import numpy as np
-from training_layers import PriorBoostLayer, NNEncLayer, ClassRebalanceMultLayer, NonGrayMaskLayer
+# import numpy as np
+# from training_layers import PriorBoostLayer, NNEncLayer, ClassRebalanceMultLayer, NonGrayMaskLayer
+from training_layers import PriorBoostLayer, NNEncLayer, NonGrayMaskLayer
 from data_loader import TrainImageFolder
 from model import Color_model
 import time
@@ -57,12 +58,13 @@ def main(args):
     if lr_step == 0:
         lr_step = args.num_epochs
     for epoch in range(args.num_epochs):
-        if epoch > 0:
-            if epoch % lr_step == 0:
-                for g in optimizer.param_groups:
-                    print('Learning Rate: {:.8f}'.format(g['lr']))
-                    g['lr'] = g['lr'] / 10
-                    print('Updated Learning Rate: {:.8f}'.format(g['lr']))
+        if (args.update_lr):
+            if epoch > 0:
+                if epoch % lr_step == 0:
+                    for g in optimizer.param_groups:
+                        print('Learning Rate: {:.8f}'.format(g['lr']))
+                        g['lr'] = g['lr'] / 5
+                        print('Updated Learning Rate: {:.8f}'.format(g['lr']))
 
         epoch_start_time = time.time()
         for i, (images, img_ab) in enumerate(data_loader):
@@ -122,6 +124,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type = int, default = 200)
     parser.add_argument('--num_workers', type = int, default = 16)
     parser.add_argument('--learning_rate', type = float, default = 1e-4)
+    parser.add_argument('--update_lr', type=int, default=0)
     args = parser.parse_args()
     print(args)
     main(args)

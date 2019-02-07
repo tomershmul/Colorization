@@ -1,20 +1,20 @@
-import torch
+# import torch
 import torch.nn as nn
-from torchvision import models
+# from torchvision import models
 
-class ScaleLayer(nn.Module):
-
-   def __init__(self, init_value=1e-3):
-       super().__init__()
-       self.scale = nn.Parameter(torch.FloatTensor([init_value]))
-
-   def forward(self, input):
-       return input * self.scale
-
-def weights_init(model):
-    if type(model) in [nn.Conv2d, nn.Linear]:
-        nn.init.xavier_normal_(model.weight.data)
-        nn.init.constant_(model.bias.data, 0.1)
+# class ScaleLayer(nn.Module):
+#
+#    def __init__(self, init_value=1e-3):
+#        super().__init__()
+#        self.scale = nn.Parameter(torch.FloatTensor([init_value]))
+#
+#    def forward(self, input):
+#        return input * self.scale
+#
+# def weights_init(model):
+#     if type(model) in [nn.Conv2d, nn.Linear]:
+#         nn.init.xavier_normal_(model.weight.data)
+#         nn.init.constant_(model.bias.data, 0.1)
 
 class Color_model(nn.Module):
     def __init__(self):
