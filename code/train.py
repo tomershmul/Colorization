@@ -40,9 +40,9 @@ def main(args):
     data_loader = torch.utils.data.DataLoader(train_set, batch_size = args.batch_size, shuffle = True, num_workers = args.num_workers)
 
     # Build the models
-    model=nn.DataParallel(Color_model()).cuda()
+    model=nn.DataParallel(Color_model(new_arch=True)).cuda()
     if args.num_epochs_load != 0:
-        model.load_state_dict(torch.load('../model/models/model-{}-800.ckpt'.format(args.num_epochs_load))) # TODO take from input arg
+        model.load_state_dict(torch.load('../model/models/model-{}-625.ckpt'.format(args.num_epochs_load))) # TODO take from input arg
     encode_layer=NNEncLayer()
     boost_layer=PriorBoostLayer()
     nongray_mask=NonGrayMaskLayer()
@@ -91,6 +91,7 @@ def main(args):
 
             except Exception as ex:
                 print (str(ex))
+                #import ipdb; ipdb.set_trace()
                 pass
 
         epoch_time = time.time() - epoch_start_time
@@ -110,7 +111,7 @@ if __name__ == '__main__':
     parser.add_argument('--model_path', type = str, default = '../model/models/', help = 'path for saving trained models')
     parser.add_argument('--crop_size', type = int, default = 224, help = 'size for randomly cropping images')
     parser.add_argument('--image_dir', type=str, default='../data/imagenet64', help='directory for train images')
-    parser.add_argument('--log_step', type = int, default = 100, help = 'step size for prining log info')
+    parser.add_argument('--log_step', type = int, default = 5, help = 'step size for prining log info')
     parser.add_argument('--save_step', type = int, default = 5, help = 'step size for saving trained models')
 
     # Model parameters

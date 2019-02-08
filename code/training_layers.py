@@ -50,8 +50,8 @@ class PriorBoostLayer(object):
         self.alpha = 1.
         self.pc = PriorFactor(self.alpha, gamma=self.gamma, priorFile=os.path.join(self.ENC_DIR, 'prior_probs.npy'))
 
-        self.X = 224
-        self.Y = 224
+        self.X = 64
+        self.Y = 64
 
 
     def forward(self, bottom):

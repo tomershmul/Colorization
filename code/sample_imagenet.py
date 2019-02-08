@@ -24,6 +24,8 @@ def load_image(image_path, model_output_size, transform=None,):
     
     if transform is not None:
         image = transform(image)
+    if image.mode != 'RGB':
+        image = image.convert('RGB')
     image_small=transforms.Resize(model_output_size)(image)
     image_small=np.expand_dims(rgb2lab(image_small)[:,:,0],axis=-1)
     image=rgb2lab(image)[:,:,0]-50.
