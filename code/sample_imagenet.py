@@ -24,6 +24,8 @@ def load_image(image_path, model_output_size, transform=None,):
     
     if transform is not None:
         image = transform(image)
+    if image.mode != 'RGB':
+        image = image.convert('RGB')
     image_small=transforms.Resize(model_output_size)(image)
     image_small=np.expand_dims(rgb2lab(image_small)[:,:,0],axis=-1)
     image=rgb2lab(image)[:,:,0]-50.
@@ -36,6 +38,7 @@ def main():
     work_dataset = "CIFAR10"
     if work_dataset == "CIFAR10":
         model_output_size = 32 # TODO 32 CIFAR, 56 in ImageNet
+        #model_output_size = 64 # TODO 32 CIFAR, 56 in ImageNet
         upscale = 2
     else:
         model_output_size = 56 # TODO 32 CIFAR, 56 in ImageNet
@@ -44,8 +47,8 @@ def main():
 
     data_dir = "../data/val"
     dirs=os.listdir(data_dir)
-    color_model = nn.DataParallel(Color_model()).cuda().eval()
-    color_model.load_state_dict(torch.load('../model/models/model-50-800.ckpt'))
+    color_model = nn.DataParallel(Color_model(new_arch=True)).cuda().eval()
+    color_model.load_state_dict(torch.load('../model/models/model-30-625.ckpt'))
      
     for file in dirs:
         image,image_small=load_image(data_dir+'/'+file, model_output_size=model_output_size, transform=scale_transform) #TODO CIFAR 32, imagenet 56

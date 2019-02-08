@@ -18,13 +18,13 @@ class NNEncLayer(object):
     '''
 
     def __init__(self):
-        self.NN = 32
-        self.sigma = 0.5
+        self.NN = 5
+        self.sigma = 5
         self.ENC_DIR = './resources/'
         self.nnenc = NNEncode(self.NN, self.sigma, km_filepath=os.path.join(self.ENC_DIR, 'pts_in_hull.npy'))
 
-        self.X = 224
-        self.Y = 224
+        self.X = 64
+        self.Y = 64
         self.Q = self.nnenc.K
 
     def forward(self, x):
@@ -51,8 +51,8 @@ class PriorBoostLayer(object):
         self.alpha = 1.
         self.pc = PriorFactor(self.alpha, gamma=self.gamma, priorFile=os.path.join(self.ENC_DIR, 'prior_probs.npy'))
 
-        self.X = 224
-        self.Y = 224
+        self.X = 64
+        self.Y = 64
 
 
     def forward(self, bottom):
@@ -190,7 +190,7 @@ class NNEncode():
         self.K = self.cc.shape[0]
         self.NN = int(NN)
         self.sigma = sigma
-        self.nbrs = nn.NearestNeighbors(n_neighbors=NN, algorithm='ball_tree').fit(self.cc)
+        self.nbrs = nn.NearestNeighbors(n_neighbors=self.NN, algorithm='ball_tree').fit(self.cc)
 
         self.alreadyUsed = False
 

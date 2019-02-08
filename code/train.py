@@ -23,6 +23,7 @@ def main(args):
     work_dataset = "CIFAR10"
     if work_dataset == "CIFAR10":
         model_output_size = 32 # TODO 32 CIFAR, 56 in ImageNet
+        #model_output_size = 64 # TODO 32 CIFAR, 56 in ImageNet
         upscale = 2
     else:
         model_output_size = 56 # TODO 32 CIFAR, 56 in ImageNet
@@ -39,9 +40,9 @@ def main(args):
     data_loader = torch.utils.data.DataLoader(train_set, batch_size = args.batch_size, shuffle = True, num_workers = args.num_workers)
 
     # Build the models
-    model=nn.DataParallel(Color_model()).cuda()
+    model=nn.DataParallel(Color_model(new_arch=True)).cuda()
     if args.num_epochs_load != 0:
-        model.load_state_dict(torch.load('../model/models/model-{}-800.ckpt'.format(args.num_epochs_load))) # TODO take from input arg
+        model.load_state_dict(torch.load('../model/models/model-{}-625.ckpt'.format(args.num_epochs_load))) # TODO take from input arg
     encode_layer=NNEncLayer()
     boost_layer=PriorBoostLayer()
     nongray_mask=NonGrayMaskLayer()
@@ -53,7 +54,7 @@ def main(args):
 
     # Train the models
     total_step = len(data_loader)
-    lr_step = int(args.num_epochs / 4)
+    lr_step = int(args.num_epochs / 2)
     if lr_step == 0:
         lr_step = args.num_epochs
     for epoch in range(args.num_epochs):
@@ -92,7 +93,9 @@ def main(args):
                       .format(args.num_epochs_load+epoch, args.num_epochs_load+args.num_epochs, i, total_step, loss.item(), step_time, step_fps))
 
             except Exception as ex:
+                #raise
                 print (str(ex))
+                #import ipdb; ipdb.set_trace()
                 pass
         # Save the model checkpoints
         if (epoch % args.save_step == args.save_step-1):
@@ -113,14 +116,14 @@ if __name__ == '__main__':
     #parser.add_argument('--image_dir', type = str, default = '../data/images256', help = 'directory for resized images')
     parser.add_argument('--image_dir', type=str, default='../data/imagenet64', help='directory for resized images')
     # parser.add_argument('--image_dir', type=str, default='../data/imagenet128', help='directory for resized images')
-    parser.add_argument('--log_step', type = int, default = 100, help = 'step size for prining log info')
+    parser.add_argument('--log_step', type = int, default = 5, help = 'step size for prining log info')
     parser.add_argument('--save_step', type = int, default = 5, help = 'step size for saving trained models')
 
     # Model parameters
     parser.add_argument('--num_epochs_load', type = int, default = 0)
     parser.add_argument('--num_epochs', type = int, default = 50)
-    parser.add_argument('--batch_size', type = int, default = 200)
-    parser.add_argument('--num_workers', type = int, default = 16)
+    parser.add_argument('--batch_size', type = int, default = 256)
+    parser.add_argument('--num_workers', type = int, default = 32)
     parser.add_argument('--learning_rate', type = float, default = 1e-4)
     args = parser.parse_args()
     print(args)

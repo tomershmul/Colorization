@@ -17,77 +17,148 @@ def weights_init(model):
         nn.init.constant_(model.bias.data, 0.1)
 
 class Color_model(nn.Module):
-    def __init__(self):
+    def __init__(self, new_arch=False):
         super(Color_model, self).__init__()
-        self.features = nn.Sequential(
-            # conv1
-            nn.Conv2d(in_channels = 1, out_channels = 64, kernel_size = 3, stride = 1, padding = 1),
-            nn.ReLU(),
-            nn.Conv2d(in_channels = 64, out_channels = 64, kernel_size = 3, stride = 2, padding = 1),
-            nn.ReLU(),
-            nn.BatchNorm2d(num_features = 64),
-            # conv2
-            nn.Conv2d(in_channels = 64, out_channels = 128, kernel_size = 3, stride = 1, padding = 1),
-            nn.ReLU(),
-            nn.Conv2d(in_channels = 128, out_channels = 128, kernel_size = 3, stride = 2, padding = 1),
-            nn.ReLU(),
-            nn.BatchNorm2d(num_features = 128),
-            # # conv3
-            # nn.Conv2d(in_channels = 128, out_channels = 256, kernel_size = 3, stride = 1, padding = 1),
-            # nn.ReLU(),
-            # nn.Conv2d(in_channels = 256, out_channels = 256, kernel_size = 3, stride = 1, padding = 1),
-            # nn.ReLU(),
-            # nn.Conv2d(in_channels = 256, out_channels = 256, kernel_size = 3, stride = 2, padding = 1),
-            # nn.ReLU(),
-            # nn.BatchNorm2d(num_features = 256),
-            # conv4
-            nn.Conv2d(in_channels = 128, out_channels = 256, kernel_size = 3, stride = 1, padding = 1),
-            nn.ReLU(),
-            nn.Conv2d(in_channels = 256, out_channels = 256, kernel_size = 3, stride = 1, padding = 1),
-            nn.ReLU(),
-            nn.Conv2d(in_channels = 256, out_channels = 256, kernel_size = 3, stride = 1, padding = 1),
-            nn.ReLU(),
-            nn.BatchNorm2d(num_features = 256),
-            # conv5
-            nn.Conv2d(in_channels = 256, out_channels = 512, kernel_size = 3, stride = 1, padding = 2, dilation = 2),
-            nn.ReLU(),
-            nn.Conv2d(in_channels = 512, out_channels = 512, kernel_size = 3, stride = 1, padding = 2, dilation = 2),
-            nn.ReLU(),
-            nn.Conv2d(in_channels = 512, out_channels = 512, kernel_size = 3, stride = 1, padding = 2, dilation = 2),
-            nn.ReLU(),
-            nn.BatchNorm2d(num_features = 512),
-            # # conv6
-            # nn.ReLU(),
-            # nn.Conv2d(in_channels = 512, out_channels = 512, kernel_size = 3, stride = 1, padding = 2, dilation = 2),
-            # nn.ReLU(),
-            # nn.Conv2d(in_channels = 512, out_channels = 512, kernel_size = 3, stride = 1, padding = 2, dilation = 2),
-            # nn.ReLU(),
-            # nn.Conv2d(in_channels = 512, out_channels = 512, kernel_size = 3, stride = 1, padding = 2, dilation = 2),
-            # nn.ReLU(),
-            # nn.BatchNorm2d(num_features = 512),
-            # conv7
-            nn.Conv2d(in_channels = 512, out_channels = 256, kernel_size = 3, stride = 1, padding = 1, dilation = 1),
-            nn.ReLU(),
-            nn.Conv2d(in_channels = 256, out_channels = 256, kernel_size = 3, stride = 1, padding = 1, dilation = 1),
-            nn.ReLU(),
-            nn.Conv2d(in_channels = 256, out_channels = 256, kernel_size = 3, stride = 1, padding = 1, dilation = 1),
-            nn.ReLU(),
-            nn.BatchNorm2d(num_features = 256),
-            # conv8
-            nn.ConvTranspose2d(in_channels = 256, out_channels = 128, kernel_size = 4, stride = 2, padding = 1, dilation = 1),
-            nn.ReLU(),
-            nn.Conv2d(in_channels = 128, out_channels = 128, kernel_size = 3, stride = 1, padding = 1, dilation = 1),
-            nn.ReLU(),
-            nn.Conv2d(in_channels = 128, out_channels = 128, kernel_size = 3, stride = 1, padding = 1, dilation = 1),
-            nn.ReLU(),
-            # conv8_313
-            nn.Conv2d(in_channels = 128, out_channels = 313, kernel_size = 1, stride = 1,dilation = 1),
-            #eltwise product
-            # softmax
-            #nn.Softmax(dim=1),
-	    # decoding
-            #nn.Conv2d(in_channels = 313, out_channels = 2, kernel_size = 1, stride = 1)
-        )
+        if not new_arch:
+            self.features = nn.Sequential(
+               # conv1
+               nn.Conv2d(in_channels = 1, out_channels = 64, kernel_size = 3, stride = 1, padding = 1),
+               nn.ReLU(),
+               nn.Conv2d(in_channels = 64, out_channels = 64, kernel_size = 3, stride = 2, padding = 1),
+               nn.ReLU(),
+               nn.BatchNorm2d(num_features = 64),
+               # conv2
+               nn.Conv2d(in_channels = 64, out_channels = 128, kernel_size = 3, stride = 1, padding = 1),
+               nn.ReLU(),
+               nn.Conv2d(in_channels = 128, out_channels = 128, kernel_size = 3, stride = 2, padding = 1),
+               nn.ReLU(),
+               nn.BatchNorm2d(num_features = 128),
+               # # conv3
+               # nn.Conv2d(in_channels = 128, out_channels = 256, kernel_size = 3, stride = 1, padding = 1),
+               # nn.ReLU(),
+               # nn.Conv2d(in_channels = 256, out_channels = 256, kernel_size = 3, stride = 1, padding = 1),
+               # nn.ReLU(),
+               # nn.Conv2d(in_channels = 256, out_channels = 256, kernel_size = 3, stride = 2, padding = 1),
+               # nn.ReLU(),
+               # nn.BatchNorm2d(num_features = 256),
+               # conv4
+               nn.Conv2d(in_channels = 128, out_channels = 256, kernel_size = 3, stride = 1, padding = 1),
+               nn.ReLU(),
+               nn.Conv2d(in_channels = 256, out_channels = 256, kernel_size = 3, stride = 1, padding = 1),
+               nn.ReLU(),
+               nn.Conv2d(in_channels = 256, out_channels = 256, kernel_size = 3, stride = 1, padding = 1),
+               nn.ReLU(),
+               nn.BatchNorm2d(num_features = 256),
+               # conv5
+               nn.Conv2d(in_channels = 256, out_channels = 512, kernel_size = 3, stride = 1, padding = 2, dilation = 2),
+               nn.ReLU(),
+               nn.Conv2d(in_channels = 512, out_channels = 512, kernel_size = 3, stride = 1, padding = 2, dilation = 2),
+               nn.ReLU(),
+               nn.Conv2d(in_channels = 512, out_channels = 512, kernel_size = 3, stride = 1, padding = 2, dilation = 2),
+               nn.ReLU(),
+               nn.BatchNorm2d(num_features = 512),
+               # # conv6
+               # nn.ReLU(),
+               # nn.Conv2d(in_channels = 512, out_channels = 512, kernel_size = 3, stride = 1, padding = 2, dilation = 2),
+               # nn.ReLU(),
+               # nn.Conv2d(in_channels = 512, out_channels = 512, kernel_size = 3, stride = 1, padding = 2, dilation = 2),
+               # nn.ReLU(),
+               # nn.Conv2d(in_channels = 512, out_channels = 512, kernel_size = 3, stride = 1, padding = 2, dilation = 2),
+               # nn.ReLU(),
+               # nn.BatchNorm2d(num_features = 512),
+               # conv7
+               nn.Conv2d(in_channels = 512, out_channels = 256, kernel_size = 3, stride = 1, padding = 1, dilation = 1),
+               nn.ReLU(),
+               nn.Conv2d(in_channels = 256, out_channels = 256, kernel_size = 3, stride = 1, padding = 1, dilation = 1),
+               nn.ReLU(),
+               nn.Conv2d(in_channels = 256, out_channels = 256, kernel_size = 3, stride = 1, padding = 1, dilation = 1),
+               nn.ReLU(),
+               nn.BatchNorm2d(num_features = 256),
+               # conv8
+               nn.ConvTranspose2d(in_channels = 256, out_channels = 128, kernel_size = 4, stride = 2, padding = 1, dilation = 1),
+               nn.ReLU(),
+               nn.Conv2d(in_channels = 128, out_channels = 128, kernel_size = 3, stride = 1, padding = 1, dilation = 1),
+               nn.ReLU(),
+               nn.Conv2d(in_channels = 128, out_channels = 128, kernel_size = 3, stride = 1, padding = 1, dilation = 1),
+               nn.ReLU(),
+               # conv8_313
+               nn.Conv2d(in_channels = 128, out_channels = 313, kernel_size = 1, stride = 1,dilation = 1),
+               #eltwise product
+               # softmax
+               #nn.Softmax(dim=1),
+               # decoding
+               #nn.Conv2d(in_channels = 313, out_channels = 2, kernel_size = 1, stride = 1)
+            )
+        else:
+            self.features = nn.Sequential(
+               # conv1
+               nn.Conv2d(in_channels = 1, out_channels = 64, kernel_size = 3, stride = 1, padding = 1),
+               nn.ReLU(),
+               nn.Conv2d(in_channels = 64, out_channels = 64, kernel_size = 3, stride = 2, padding = 1),
+               nn.ReLU(),
+               nn.BatchNorm2d(num_features = 64),
+               # conv2
+               nn.Conv2d(in_channels = 64, out_channels = 128, kernel_size = 3, stride = 1, padding = 1 , dilation = 1),
+               nn.ReLU(),
+               nn.Conv2d(in_channels = 128, out_channels = 128, kernel_size = 3, stride = 1, padding = 1, dilation = 1),
+               nn.ReLU(),
+               nn.BatchNorm2d(num_features = 128),
+               # # conv3
+               # nn.Conv2d(in_channels = 128, out_channels = 256, kernel_size = 3, stride = 1, padding = 1),
+               # nn.ReLU(),
+               # nn.Conv2d(in_channels = 256, out_channels = 256, kernel_size = 3, stride = 1, padding = 1),
+               # nn.ReLU(),
+               # nn.Conv2d(in_channels = 256, out_channels = 256, kernel_size = 3, stride = 2, padding = 1),
+               # nn.ReLU(),
+               # nn.BatchNorm2d(num_features = 256),
+               # conv4
+               nn.Conv2d(in_channels = 128, out_channels = 256, kernel_size = 3, stride = 1, padding = 2, dilation = 2),
+               nn.ReLU(),
+               nn.Conv2d(in_channels = 256, out_channels = 256, kernel_size = 3, stride = 1, padding = 2, dilation = 2),
+               nn.ReLU(),
+               nn.Conv2d(in_channels = 256, out_channels = 256, kernel_size = 3, stride = 1, padding = 2, dilation = 2),
+               nn.ReLU(),
+               nn.BatchNorm2d(num_features = 256),
+               # conv5
+               nn.Conv2d(in_channels = 256, out_channels = 512, kernel_size = 3, stride = 1, padding = 4, dilation = 4),
+               nn.ReLU(),
+               nn.Conv2d(in_channels = 512, out_channels = 512, kernel_size = 3, stride = 1, padding = 4, dilation = 4),
+               nn.ReLU(),
+               nn.Conv2d(in_channels = 512, out_channels = 512, kernel_size = 3, stride = 1, padding = 4, dilation = 4),
+               nn.ReLU(),
+               nn.BatchNorm2d(num_features = 512),
+               # # conv6
+               # nn.ReLU(),
+               # nn.Conv2d(in_channels = 512, out_channels = 512, kernel_size = 3, stride = 1, padding = 2, dilation = 2),
+               # nn.ReLU(),
+               # nn.Conv2d(in_channels = 512, out_channels = 512, kernel_size = 3, stride = 1, padding = 2, dilation = 2),
+               # nn.ReLU(),
+               # nn.Conv2d(in_channels = 512, out_channels = 512, kernel_size = 3, stride = 1, padding = 2, dilation = 2),
+               # nn.ReLU(),
+               # nn.BatchNorm2d(num_features = 512),
+               # conv7
+               nn.Conv2d(in_channels = 512, out_channels = 256, kernel_size = 3, stride = 1, padding = 2, dilation = 2),
+               nn.ReLU(),
+               nn.Conv2d(in_channels = 256, out_channels = 256, kernel_size = 3, stride = 1, padding = 2, dilation = 2),
+               nn.ReLU(),
+               nn.Conv2d(in_channels = 256, out_channels = 256, kernel_size = 3, stride = 1, padding = 2, dilation = 2),
+               nn.ReLU(),
+               nn.BatchNorm2d(num_features = 256),
+               # conv8
+               nn.Conv2d(in_channels = 256, out_channels = 128, kernel_size = 3, stride = 1, padding = 1, dilation = 1),
+               nn.ReLU(),
+               nn.Conv2d(in_channels = 128, out_channels = 128, kernel_size = 3, stride = 1, padding = 1, dilation = 1),
+               nn.ReLU(),
+               nn.Conv2d(in_channels = 128, out_channels = 128, kernel_size = 3, stride = 1, padding = 1, dilation = 1),
+               nn.ReLU(),
+               # conv8_313
+               nn.Conv2d(in_channels = 128, out_channels = 313, kernel_size = 1, stride = 1,dilation = 1),
+               #eltwise product
+               # softmax
+               #nn.Softmax(dim=1),
+               # decoding
+               #nn.Conv2d(in_channels = 313, out_channels = 2, kernel_size = 1, stride = 1)
+            )           
         self.apply(weights_init)
 
     def forward(self, gray_image):
