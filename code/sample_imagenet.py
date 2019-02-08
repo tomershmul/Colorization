@@ -45,7 +45,7 @@ def main():
     data_dir = "../data/val"
     dirs=os.listdir(data_dir)
     color_model = nn.DataParallel(Color_model()).cuda().eval()
-    color_model.load_state_dict(torch.load('../model/models/model-65-800.ckpt'))
+    color_model.load_state_dict(torch.load('../model/models/model-90-800.ckpt'))
      
     for file in dirs:
         image,image_small=load_image(data_dir+'/'+file, model_output_size=model_output_size, transform=scale_transform) #TODO CIFAR 32, imagenet 56

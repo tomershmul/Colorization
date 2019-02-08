@@ -11,10 +11,10 @@ import torch.nn as nn
 #    def forward(self, input):
 #        return input * self.scale
 #
-# def weights_init(model):
-#     if type(model) in [nn.Conv2d, nn.Linear]:
-#         nn.init.xavier_normal_(model.weight.data)
-#         nn.init.constant_(model.bias.data, 0.1)
+def weights_init(model):
+    if type(model) in [nn.Conv2d, nn.Linear]:
+        nn.init.xavier_normal_(model.weight.data)
+        nn.init.constant_(model.bias.data, 0.1)
 
 class Color_model(nn.Module):
     def __init__(self):

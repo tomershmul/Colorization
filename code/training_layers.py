@@ -17,14 +17,14 @@ class NNEncLayer(object):
     '''
 
     def __init__(self):
-        self.NN = 32
-        self.sigma = 0.5
+        self.NN = 5
+        self.sigma = 5
         self.ENC_DIR = './resources/'
         self.nnenc = NNEncode(self.NN, self.sigma, km_filepath=os.path.join(self.ENC_DIR, 'pts_in_hull.npy'))
 
-        self.X = 224
-        self.Y = 224
-        self.Q = self.nnenc.K
+        # self.X = 224
+        # self.Y = 224
+        # self.Q = self.nnenc.K
 
     def forward(self, x):
         #return np.argmax(self.nnenc.encode_points_mtx_nd(x), axis=1).astype(np.int32)
@@ -32,8 +32,8 @@ class NNEncLayer(object):
         max_encode=np.argmax(encode,axis=1).astype(np.int32)
         return encode,max_encode
 
-    def reshape(self, bottom, top):
-        top[0].reshape(self.N, self.Q, self.X, self.Y)
+    # def reshape(self, bottom, top):
+    #     top[0].reshape(self.N, self.Q, self.X, self.Y)
 
 
 class PriorBoostLayer(object):
@@ -157,13 +157,13 @@ class PriorFactor():
         #if (self.verbose):
         #    self.print_correction_stats()
 
-    def print_correction_stats(self):
-        print('Prior factor correction:')
-        print('  (alpha,gamma) = (%.2f, %.2f)' % (self.alpha, self.gamma))
-        print('  (min,max,mean,med,exp) = (%.2f, %.2f, %.2f, %.2f, %.2f)' % (
-            np.min(self.prior_factor), np.max(self.prior_factor), np.mean(self.prior_factor),
-            np.median(self.prior_factor),
-            np.sum(self.prior_factor * self.prior_probs)))
+    # def print_correction_stats(self):
+    #     print('Prior factor correction:')
+    #     print('  (alpha,gamma) = (%.2f, %.2f)' % (self.alpha, self.gamma))
+    #     print('  (min,max,mean,med,exp) = (%.2f, %.2f, %.2f, %.2f, %.2f)' % (
+    #         np.min(self.prior_factor), np.max(self.prior_factor), np.mean(self.prior_factor),
+    #         np.median(self.prior_factor),
+    #         np.sum(self.prior_factor * self.prior_probs)))
 
     def forward(self, data_ab_quant, axis=1):
         data_ab_maxind = np.argmax(data_ab_quant, axis=axis)
@@ -181,15 +181,17 @@ class PriorFactor():
 class NNEncode():
     ''' Encode points using NN search and Gaussian kernel '''
 
-    def __init__(self, NN, sigma, km_filepath='', cc=-1):
-        if (check_value(cc, -1)):
-            self.cc = np.load(km_filepath)
-        else:
-            self.cc = cc
+    def __init__(self, NN, sigma, km_filepath):
+        # if (check_value(cc, -1)):
+        #     self.cc = np.load(km_filepath)
+        # else:
+        #     self.cc = cc
+
+        self.cc = np.load(km_filepath)
         self.K = self.cc.shape[0]
         self.NN = int(NN)
         self.sigma = sigma
-        self.nbrs = nn.NearestNeighbors(n_neighbors=NN, algorithm='ball_tree').fit(self.cc)
+        self.nbrs = nn.NearestNeighbors(n_neighbors=self.NN, algorithm='ball_tree').fit(self.cc)
 
         self.alreadyUsed = False
 
@@ -210,34 +212,33 @@ class NNEncode():
         wts = np.exp(-dists ** 2 / (2 * self.sigma ** 2))
         wts = wts / np.sum(wts, axis=1)[:, na()]
         self.pts_enc_flt[self.p_inds, inds] = wts
-        
-        
+
         pts_enc_nd = unflatten_2d_array(self.pts_enc_flt, pts_nd, axis=axis)
         return pts_enc_nd
-    
-    def decode_points_mtx_nd(self,pts_enc_nd,axis=1):
-        pts_enc_flt = flatten_nd_array(pts_enc_nd,axis=axis)
-        pts_dec_flt = np.dot(pts_enc_flt,self.cc)
-        pts_dec_nd = unflatten_2d_array(pts_dec_flt,pts_enc_nd,axis=axis)
-        return pts_dec_nd
-
-    def decode_1hot_mtx_nd(self,pts_enc_nd,axis=1,returnEncode=False):
-        pts_1hot_nd = nd_argmax_1hot(pts_enc_nd,axis=axis)
-        pts_dec_nd = self.decode_points_mtx_nd(pts_1hot_nd,axis=axis)
-        if(returnEncode):
-            return (pts_dec_nd,pts_1hot_nd)
-        else:
-            return pts_dec_nd
+    #
+    # def decode_points_mtx_nd(self,pts_enc_nd,axis=1):
+    #     pts_enc_flt = flatten_nd_array(pts_enc_nd,axis=axis)
+    #     pts_dec_flt = np.dot(pts_enc_flt,self.cc)
+    #     pts_dec_nd = unflatten_2d_array(pts_dec_flt,pts_enc_nd,axis=axis)
+    #     return pts_dec_nd
+    #
+    # def decode_1hot_mtx_nd(self,pts_enc_nd,axis=1,returnEncode=False):
+    #     pts_1hot_nd = nd_argmax_1hot(pts_enc_nd,axis=axis)
+    #     pts_dec_nd = self.decode_points_mtx_nd(pts_1hot_nd,axis=axis)
+    #     if(returnEncode):
+    #         return (pts_dec_nd,pts_1hot_nd)
+    #     else:
+    #         return pts_dec_nd
 # *****************************
 # ***** Utility functions *****
 # *****************************
-def check_value(inds, val):
-    ''' Check to see if an array is a single element equaling a particular value
-    for pre-processing inputs in a function '''
-    if (np.array(inds).size == 1):
-        if (inds == val):
-            return True
-    return False
+# def check_value(inds, val):
+#     ''' Check to see if an array is a single element equaling a particular value
+#     for pre-processing inputs in a function '''
+#     if (np.array(inds).size == 1):
+#         if (inds == val):
+#             return True
+#     return False
 
 
 def na():  # shorthand for new axis
