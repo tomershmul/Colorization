@@ -83,11 +83,11 @@ def main(args):
                 optimizer.step()
 
                 # Print log info
-                if i % args.log_step == 0:
+                if (i+1) % args.log_step == 0:
                     step_time = time.time() - step_start_time
                     step_fps = args.batch_size / step_time
                     print('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}, Time: {:.4f}, fps: {:.4f}'
-                      .format(args.num_epochs_load+epoch+1, args.num_epochs_load+args.num_epochs, i, total_step, loss.item(), step_time, step_fps))
+                      .format(args.num_epochs_load+epoch+1, args.num_epochs_load+args.num_epochs, i+1, total_step, loss.item(), step_time, step_fps))
 
             except Exception as ex:
                 print (str(ex))
@@ -116,7 +116,7 @@ if __name__ == '__main__':
     # Model parameters
     parser.add_argument('--num_epochs_load', type = int, default = 0)
     parser.add_argument('--num_epochs', type = int, default = 50)
-    parser.add_argument('--batch_size', type = int, default = 200)
+    parser.add_argument('--batch_size', type = int, default = 50)
     parser.add_argument('--num_workers', type = int, default = 16)
     parser.add_argument('--learning_rate', type = float, default = 1e-4)
     parser.add_argument('--update_lr', type=int, default=0)
