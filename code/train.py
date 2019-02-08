@@ -12,8 +12,8 @@ from model import Color_model
 import time
 
 original_transform = transforms.Compose([
-    transforms.Resize((64, 64)),
-    # transforms.RandomCrop(224),
+    #transforms.Resize((64, 64)),
+    #transforms.RandomCrop(224),
     transforms.RandomHorizontalFlip(),
     #transforms.ToTensor()
 ])
@@ -23,7 +23,7 @@ def main(args):
     # ImageNet64 vs ImageNet changes
     work_dataset = "ImageNet64"
     if work_dataset == "ImageNet64":
-        model_output_size = 32 # TODO 32 CIFAR, 56 in ImageNet
+        model_output_size = 64 # TODO 32 CIFAR, 56 in ImageNet
         upscale = 2
     else:
         model_output_size = 56 # TODO 32 CIFAR, 56 in ImageNet
@@ -40,9 +40,9 @@ def main(args):
     data_loader = torch.utils.data.DataLoader(train_set, batch_size = args.batch_size, shuffle = True, num_workers = args.num_workers)
 
     # Build the models
-    model=nn.DataParallel(Color_model(new_arch=True)).cuda()
+    model=nn.DataParallel(Color_model(args.new_arch)).cuda()
     if args.num_epochs_load != 0:
-        model.load_state_dict(torch.load('../model/models/model-{}-625.ckpt'.format(args.num_epochs_load))) # TODO take from input arg
+        model.load_state_dict(torch.load('../model/models/model-{}-512.ckpt'.format(args.num_epochs_load))) # TODO take from input arg
     encode_layer=NNEncLayer()
     boost_layer=PriorBoostLayer()
     nongray_mask=NonGrayMaskLayer()
@@ -63,36 +63,44 @@ def main(args):
                 optimizer.param_groups[0]['lr'] = optimizer.param_groups[0]['lr'] / 5
 
         epoch_start_time = time.time()
-        for i, (images, img_ab) in enumerate(data_loader):
-            try:
-                step_start_time = time.time()
-                # Set mini-batch dataset
-                images = images.unsqueeze(1).float().cuda()
-                img_ab = img_ab.float()
-                encode,max_encode=encode_layer.forward(img_ab)
-                targets=torch.Tensor(max_encode).long().cuda()
-                boost=torch.Tensor(boost_layer.forward(encode)).float().cuda()
-                mask=torch.Tensor(nongray_mask.forward(img_ab)).float().cuda()
-                boost_nongray=boost*mask
-                outputs = model(images)
-
-                loss = (criterion(outputs,targets)*(boost_nongray.squeeze(1))).mean()
-                model.zero_grad()
-                
-                loss.backward()
-                optimizer.step()
-
-                # Print log info
-                if (i+1) % args.log_step == 0:
-                    step_time = time.time() - step_start_time
-                    step_fps = args.batch_size / step_time
-                    print('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}, Time: {:.4f}, fps: {:.4f}'
-                      .format(args.num_epochs_load+epoch+1, args.num_epochs_load+args.num_epochs, i+1, total_step, loss.item(), step_time, step_fps))
-
-            except Exception as ex:
-                print (str(ex))
-                #import ipdb; ipdb.set_trace()
-                pass
+        try:
+            for i, (images, img_ab) in enumerate(data_loader):
+                try:
+                    step_start_time = time.time()
+                    # Set mini-batch dataset
+                    images = images.unsqueeze(1).float().cuda()
+                    img_ab = img_ab.float()
+                    encode,max_encode=encode_layer.forward(img_ab)
+                    targets=torch.Tensor(max_encode).long().cuda()
+                    boost=torch.Tensor(boost_layer.forward(encode)).float().cuda()
+                    mask=torch.Tensor(nongray_mask.forward(img_ab)).float().cuda()
+                    boost_nongray=boost*mask
+                    outputs = model(images)
+    
+                    loss = (criterion(outputs,targets)*(boost_nongray.squeeze(1))).mean()
+                    model.zero_grad()
+                    
+                    loss.backward()
+                    optimizer.step()
+    
+                    # Print log info
+                    if (i+1) % args.log_step == 0:
+                        step_time = time.time() - step_start_time
+                        step_fps = args.batch_size / step_time
+                        print('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}, Time: {:.4f}, fps: {:.4f}'
+                          .format(args.num_epochs_load+epoch+1, args.num_epochs_load+args.num_epochs, i+1, total_step, loss.item(), step_time, step_fps))
+    
+                except Exception as ex:
+                    print (str(ex))
+                    #import ipdb; ipdb.set_trace()
+                    pass
+        except Exception as ex:
+            print (str("I: {} ".format(i)) + (str(ex)))
+            import ipdb; ipdb.set_trace()
+            print (images) 
+            print (img_ab)
+            pass
+                    
 
         epoch_time = time.time() - epoch_start_time
         epoch_fps = args.batch_size * total_step / epoch_time
@@ -110,7 +118,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--model_path', type = str, default = '../model/models/', help = 'path for saving trained models')
     parser.add_argument('--crop_size', type = int, default = 224, help = 'size for randomly cropping images')
-    parser.add_argument('--image_dir', type=str, default='../data/imagenet64', help='directory for train images')
+    parser.add_argument('--image_dir', type=str, default='../data/imagenet128', help='directory for train images')
     parser.add_argument('--log_step', type = int, default = 5, help = 'step size for prining log info')
     parser.add_argument('--save_step', type = int, default = 5, help = 'step size for saving trained models')
 
@@ -119,8 +127,9 @@ if __name__ == '__main__':
     parser.add_argument('--num_epochs', type = int, default = 50)
     parser.add_argument('--batch_size', type = int, default = 50)
     parser.add_argument('--num_workers', type = int, default = 16)
-    parser.add_argument('--learning_rate', type = float, default = 1e-4)
-    parser.add_argument('--update_lr', type=int, default=0)
+    parser.add_argument('--learning_rate', type = float, default = 1e-5)
+    parser.add_argument('--update_lr', type=int, default=1)
+    parser.add_argument('--new_arch', type=int, default=1)
     args = parser.parse_args()
     print(args)
     main(args)
