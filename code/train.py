@@ -20,9 +20,9 @@ original_transform = transforms.Compose([
 
 
 def main(args):
-    # CIFAR10 vs ImageNet changes
-    work_dataset = "CIFAR10"
-    if work_dataset == "CIFAR10":
+    # ImageNet64 vs ImageNet changes
+    work_dataset = "ImageNet64"
+    if work_dataset == "ImageNet64":
         model_output_size = 32 # TODO 32 CIFAR, 56 in ImageNet
         upscale = 2
     else:
@@ -54,17 +54,13 @@ def main(args):
 
     # Train the models
     total_step = len(data_loader)
-    lr_step = int(args.num_epochs / 4)
+    lr_step = int(args.num_epochs / 3)
     if lr_step == 0:
         lr_step = args.num_epochs
     for epoch in range(args.num_epochs):
-        if (args.update_lr):
-            if epoch > 0:
-                if epoch % lr_step == 0:
-                    for g in optimizer.param_groups:
-                        print('Learning Rate: {:.8f}'.format(g['lr']))
-                        g['lr'] = g['lr'] / 5
-                        print('Updated Learning Rate: {:.8f}'.format(g['lr']))
+        if args.update_lr:
+            if epoch > 0 and epoch % lr_step == 0:
+                optimizer.param_groups[0]['lr'] = optimizer.param_groups[0]['lr'] / 5
 
         epoch_start_time = time.time()
         for i, (images, img_ab) in enumerate(data_loader):
@@ -91,21 +87,22 @@ def main(args):
                     step_time = time.time() - step_start_time
                     step_fps = args.batch_size / step_time
                     print('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}, Time: {:.4f}, fps: {:.4f}'
-                      .format(args.num_epochs_load+epoch, args.num_epochs_load+args.num_epochs, i, total_step, loss.item(), step_time, step_fps))
+                      .format(args.num_epochs_load+epoch+1, args.num_epochs_load+args.num_epochs, i, total_step, loss.item(), step_time, step_fps))
 
             except Exception as ex:
                 print (str(ex))
                 pass
+
+        epoch_time = time.time() - epoch_start_time
+        epoch_fps = args.batch_size * total_step / epoch_time
+        print('Epoch END [{}/{}], Step [{}/{}], Loss: {:.4f}, Time: {:.4f}, fps: {:.4f}, Learning Rate: {:.8f}'
+              .format(args.num_epochs_load+epoch+1, args.num_epochs_load+args.num_epochs, i+1, total_step, loss.item(), epoch_time, epoch_fps, optimizer.param_groups[0]['lr']))
+
         # Save the model checkpoints
         if (epoch % args.save_step == args.save_step-1):
             torch.save(model.state_dict(), os.path.join(
                 args.model_path, 'model-{}-{}.ckpt'.format(args.num_epochs_load+epoch + 1, i + 1)))
             print('Model saved: ', 'model-{}-{}.ckpt'.format(args.num_epochs_load+epoch + 1, i + 1))
-
-        epoch_time = time.time() - epoch_start_time
-        epoch_fps = args.batch_size * total_step / epoch_time
-        print('Epoch END [{}/{}], Step [{}/{}], Loss: {:.4f}, Time: {:.4f}, fps: {:.4f}'
-              .format(args.num_epochs_load+epoch, args.num_epochs_load+args.num_epochs, i, total_step, loss.item(), epoch_time, epoch_fps))
 
 
 if __name__ == '__main__':

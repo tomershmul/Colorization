@@ -17,7 +17,7 @@ class NNEncLayer(object):
     '''
 
     def __init__(self):
-        self.NN = 5
+        self.NN = 3
         self.sigma = 5
         self.ENC_DIR = './resources/'
         self.nnenc = NNEncode(self.NN, self.sigma, km_filepath=os.path.join(self.ENC_DIR, 'pts_in_hull.npy'))

@@ -32,9 +32,9 @@ def load_image(image_path, model_output_size, transform=None,):
     return image,image_small
 
 def main():
-    # CIFAR10 vs ImageNet changes
-    work_dataset = "CIFAR10"
-    if work_dataset == "CIFAR10":
+    # ImageNet64 vs ImageNet changes
+    work_dataset = "ImageNet64"
+    if work_dataset == "ImageNet64":
         model_output_size = 32 # TODO 32 CIFAR, 56 in ImageNet
         upscale = 2
     else:
