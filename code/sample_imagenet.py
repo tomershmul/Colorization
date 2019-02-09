@@ -1,3 +1,4 @@
+import argparse
 import torch
 # from torch.autograd import Variable
 # from skimage.color import lab2rgb
@@ -15,7 +16,7 @@ import os
 
 
 
-def load_image(image_path, model_output_size, transform=None,):
+def load_image(image_path, model_output_size, transform=None):
     image = Image.open(image_path)
     
     if transform is not None:
@@ -29,27 +30,26 @@ def load_image(image_path, model_output_size, transform=None,):
     
     return image,image_small
 
-def validate(ckpt, work_dataset):
-    print ("Validate: ",work_dataset, "\n",ckpt)
+def validate(dataset, ckpt, new_arch):
+    print ("Validate: ",dataset, "\n",ckpt)
     # ImageNet64 vs ImageNet changes
-    if work_dataset == "ImageNet64":
-        model_output_size = 32 # TODO 32 CIFAR, 56 in ImageNet
+    if dataset == "ImageNet64":
+        model_output_size = 32 
         upscale = 2
-    if work_dataset == "ImageNet128":
-        model_output_size = 64 # TODO 32 CIFAR, 56 in ImageNet
+    if dataset == "ImageNet128":
+        model_output_size = 64 
         upscale = 2
     else:
-        model_output_size = 56 # TODO 32 CIFAR, 56 in ImageNet
+        model_output_size = 56 
         upscale = 4
 
     scale_transform = transforms.Compose([
         transforms.Resize((model_output_size*upscale, model_output_size*upscale)),
-        # transforms.RandomCrop(224),
     ])
 
     data_dir = "../data/val"
     dirs=os.listdir(data_dir)
-    color_model = nn.DataParallel(Color_model(new_arch=True)).cuda().eval()
+    color_model = nn.DataParallel(Color_model(new_arch=new_arch)).cuda().eval()
     color_model.load_state_dict(torch.load(ckpt))
      
     for file in dirs:
@@ -65,5 +65,11 @@ def validate(ckpt, work_dataset):
         scipy.misc.imsave(color_name, color_img*255.)
 
 if __name__ == '__main__':
-    work_dataset = "ImageNet128"
-    validate(ckpt='../model/models/model-55-512.ckpt', work_dataset=work_dataset)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--new_arch', type=int, default=1)
+    parser.add_argument('--ckpt', type = str, default = '../model/models/model-55-512.ckpt', help = 'path for ckpt models')
+    parser.add_argument('--dataset', type = str, default = 'ImageNet128', help = 'ImageNet128, ImageNet64')
+    args = parser.parse_args()
+    print(args)
+    
+    validate(dataset=args.dataset, ckpt=args.ckpt, new_arch=args.new_arch)

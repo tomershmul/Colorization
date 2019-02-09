@@ -9,6 +9,7 @@ from torchvision import transforms
 from training_layers import PriorBoostLayer, NNEncLayer, NonGrayMaskLayer
 from data_loader import TrainImageFolder
 from model import Color_model
+from sample_imagenet import validate
 import time
 
 original_transform = transforms.Compose([
@@ -21,11 +22,11 @@ original_transform = transforms.Compose([
 
 def main(args):
     # ImageNet64 vs ImageNet changes
-    work_dataset = "ImageNet128"
-    if work_dataset == "ImageNet64":
+    args.dataset = "ImageNet128"
+    if args.dataset == "ImageNet64":
         model_output_size = 32 # TODO 32 CIFAR, 56 in ImageNet
         upscale = 2
-    if work_dataset == "ImageNet128":
+    if args.dataset == "ImageNet128":
         model_output_size = 64 # TODO 32 CIFAR, 56 in ImageNet
         upscale = 2
     else:
@@ -112,10 +113,10 @@ def main(args):
 
         # Save the model checkpoints
         if (epoch % args.save_step == args.save_step-1):
-            ckpt = 'model-{}-{}.ckpt'.format(args.num_epochs_load+epoch + 1, i + 1))
+            ckpt = 'model-new{}-{}-{}.ckpt'.format(args.new_arch,args.num_epochs_load+epoch + 1, i + 1))
             torch.save(model.state_dict(), os.path.join(args.model_path, ckpt))
             print('Model saved: {}'.format(ckpt))
-            validate(ckpt)
+            validate(dataset=args.dataset, ckpt=ckpt, new_arch=args.new_arch)
             
             
 
@@ -135,6 +136,7 @@ if __name__ == '__main__':
     parser.add_argument('--learning_rate', type = float, default = 1e-5)
     parser.add_argument('--update_lr', type=int, default=1)
     parser.add_argument('--new_arch', type=int, default=1)
+    parser.add_argument('--dataset', type = str, default = 'ImageNet128', help = 'ImageNet128, ImageNet64')
     args = parser.parse_args()
     print(args)
     main(args)
