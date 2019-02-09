@@ -315,7 +315,9 @@ def decode(data_l, conv8_313, rebalance=1, upscale=2):
     #data_l=np.transpose(data_l,axes=(1,2,0))
     #data_ab = resize(data_ab, (224, 224,2))
     data_ab=data_ab.repeat(upscale, axis=0).repeat(upscale, axis=1)
-    
+
+    # print('data_l.shpae', data_l.shape)
+    # print('data_ab.shpae', data_ab.shape)
     img_lab = np.concatenate((data_l, data_ab), axis=-1)
     img_rgb = color.lab2rgb(img_lab)
 
