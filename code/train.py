@@ -21,8 +21,11 @@ original_transform = transforms.Compose([
 
 def main(args):
     # ImageNet64 vs ImageNet changes
-    work_dataset = "ImageNet64"
+    work_dataset = "ImageNet128"
     if work_dataset == "ImageNet64":
+        model_output_size = 32 # TODO 32 CIFAR, 56 in ImageNet
+        upscale = 2
+    if work_dataset == "ImageNet128":
         model_output_size = 64 # TODO 32 CIFAR, 56 in ImageNet
         upscale = 2
     else:
@@ -49,7 +52,7 @@ def main(args):
     # Loss and optimizer
     criterion = nn.CrossEntropyLoss(reduce=False).cuda()
     params = list(model.parameters())
-    optimizer = torch.optim.Adam(params, lr = args.learning_rate)
+    optimizer = torch.optim.Adam(params, lr = args.learning_rate, betas=(0.9, 0.99), weight_decay=1e-3)
     
 
     # Train the models
@@ -109,10 +112,12 @@ def main(args):
 
         # Save the model checkpoints
         if (epoch % args.save_step == args.save_step-1):
-            torch.save(model.state_dict(), os.path.join(
-                args.model_path, 'model-{}-{}.ckpt'.format(args.num_epochs_load+epoch + 1, i + 1)))
-            print('Model saved: ', 'model-{}-{}.ckpt'.format(args.num_epochs_load+epoch + 1, i + 1))
-
+            ckpt = 'model-{}-{}.ckpt'.format(args.num_epochs_load+epoch + 1, i + 1))
+            torch.save(model.state_dict(), os.path.join(args.model_path, ckpt))
+            print('Model saved: {}'.format(ckpt))
+            validate(ckpt)
+            
+            
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
