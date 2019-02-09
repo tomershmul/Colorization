@@ -48,6 +48,8 @@ def validate(dataset, ckpt, new_arch):
     ])
 
     data_dir = "../data/val"
+    shutil.rmtree('../data/colorimg')
+    os.mkdir('../data/colorimg')
     dirs=os.listdir(data_dir)
     color_model = nn.DataParallel(Color_model(new_arch=new_arch)).cuda().eval()
     color_model.load_state_dict(torch.load(ckpt))
