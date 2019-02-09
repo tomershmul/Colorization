@@ -22,7 +22,6 @@ original_transform = transforms.Compose([
 
 def main(args):
     # ImageNet64 vs ImageNet changes
-    args.dataset = "ImageNet128"
     if args.dataset == "ImageNet64":
         model_output_size = 32 # TODO 32 CIFAR, 56 in ImageNet
         upscale = 2
