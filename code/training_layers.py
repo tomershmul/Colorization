@@ -1,14 +1,11 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 import numpy as np
-# import warnings
 import torch.nn.functional as F
 import os
-# from torchvision import transforms
 import sklearn.neighbors as nn
-# from skimage.transform import resize
 from skimage import color
-# import torch
+
 
 class NNEncLayer(object):
     ''' Layer which encodes ab map into Q colors
@@ -22,18 +19,10 @@ class NNEncLayer(object):
         self.ENC_DIR = './resources/'
         self.nnenc = NNEncode(self.NN, self.sigma, km_filepath=os.path.join(self.ENC_DIR, 'pts_in_hull.npy'))
 
-        # self.X = 224
-        # self.Y = 224
-        # self.Q = self.nnenc.K
-
     def forward(self, x):
-        #return np.argmax(self.nnenc.encode_points_mtx_nd(x), axis=1).astype(np.int32)
         encode=self.nnenc.encode_points_mtx_nd(x)
         max_encode=np.argmax(encode,axis=1).astype(np.int32)
         return encode,max_encode
-
-    # def reshape(self, bottom, top):
-    #     top[0].reshape(self.N, self.Q, self.X, self.Y)
 
 
 class PriorBoostLayer(object):
@@ -52,7 +41,6 @@ class PriorBoostLayer(object):
 
         self.X = 64
         self.Y = 64
-
 
     def forward(self, bottom):
         return self.pc.forward(bottom, axis=1)
@@ -83,44 +71,11 @@ class NonGrayMaskLayer(object):
                            na(), na(), na()].astype('float')
 
 
-# class ClassRebalanceMultLayer(object):
-#     ''' INPUTS
-#         bottom[0]   NxMxXxY     feature map
-#         bottom[1]   Nx1xXxY     boost coefficients
-#     OUTPUTS
-#         top[0]      NxMxXxY     on forward, gets copied from bottom[0]
-#     FUNCTIONALITY
-#         On forward pass, top[0] passes bottom[0]
-#         On backward pass, bottom[0] gets boosted by bottom[1]
-#         through pointwise multiplication (with singleton expansion) '''
-#
-#     def reshape(self, bottom, top):
-#         i = 0
-#         if (bottom[i].data.ndim == 1):
-#             top[i].reshape(bottom[i].data.shape[0])
-#         elif (bottom[i].data.ndim == 2):
-#             top[i].reshape(bottom[i].data.shape[0], bottom[i].data.shape[1])
-#         elif (bottom[i].data.ndim == 4):
-#             top[i].reshape(bottom[i].data.shape[0], bottom[i].data.shape[1], bottom[i].data.shape[2],
-#                            bottom[i].data.shape[3])
-#
-#     def forward(self, x):
-#         # output equation to negative of inputs
-#         # top[0].data[...] = bottom[0].data[...]
-#         return x
-#         # top[0].data[...] = bottom[0].data[...]*bottom[1].data[...] # this was bad, would mess up the gradients going up
-#
-#         # def backward(self, top, propagate_down, bottom):
-#         #     for i in range(len(bottom)):
-#         #         if not propagate_down[i]:
-#         #             continue
-#         #         bottom[0].diff[...] = top[0].diff[...] * bottom[1].data[...]
-#         # print 'Back-propagating class rebalance, %i'%i
-
-
 # ***************************
 # ***** SUPPORT CLASSES *****
 # ***************************
+
+
 class PriorFactor():
     ''' Class handles prior factor '''
 
@@ -153,17 +108,6 @@ class PriorFactor():
         # implied empirical prior
         self.implied_prior = self.prior_probs * self.prior_factor
         self.implied_prior = self.implied_prior / np.sum(self.implied_prior)  # re-normalize
-
-        #if (self.verbose):
-        #    self.print_correction_stats()
-
-    # def print_correction_stats(self):
-    #     print('Prior factor correction:')
-    #     print('  (alpha,gamma) = (%.2f, %.2f)' % (self.alpha, self.gamma))
-    #     print('  (min,max,mean,med,exp) = (%.2f, %.2f, %.2f, %.2f, %.2f)' % (
-    #         np.min(self.prior_factor), np.max(self.prior_factor), np.mean(self.prior_factor),
-    #         np.median(self.prior_factor),
-    #         np.sum(self.prior_factor * self.prior_probs)))
 
     def forward(self, data_ab_quant, axis=1):
         data_ab_maxind = np.argmax(data_ab_quant, axis=axis)
@@ -215,30 +159,10 @@ class NNEncode():
 
         pts_enc_nd = unflatten_2d_array(self.pts_enc_flt, pts_nd, axis=axis)
         return pts_enc_nd
-    #
-    # def decode_points_mtx_nd(self,pts_enc_nd,axis=1):
-    #     pts_enc_flt = flatten_nd_array(pts_enc_nd,axis=axis)
-    #     pts_dec_flt = np.dot(pts_enc_flt,self.cc)
-    #     pts_dec_nd = unflatten_2d_array(pts_dec_flt,pts_enc_nd,axis=axis)
-    #     return pts_dec_nd
-    #
-    # def decode_1hot_mtx_nd(self,pts_enc_nd,axis=1,returnEncode=False):
-    #     pts_1hot_nd = nd_argmax_1hot(pts_enc_nd,axis=axis)
-    #     pts_dec_nd = self.decode_points_mtx_nd(pts_1hot_nd,axis=axis)
-    #     if(returnEncode):
-    #         return (pts_dec_nd,pts_1hot_nd)
-    #     else:
-    #         return pts_dec_nd
+
 # *****************************
 # ***** Utility functions *****
 # *****************************
-# def check_value(inds, val):
-#     ''' Check to see if an array is a single element equaling a particular value
-#     for pre-processing inputs in a function '''
-#     if (np.array(inds).size == 1):
-#         if (inds == val):
-#             return True
-#     return False
 
 
 def na():  # shorthand for new axis
@@ -297,7 +221,6 @@ def decode(data_l, conv8_313, rebalance=1, upscale=2):
     ''' upscale==4 for imagenet, upscale==2 for cifar'''
     #print('data_l',type(data_l))
     #print('shape',data_l.shape)
-    #np.save('data_l.npy',data_l)
     data_l=data_l[0]+50
     data_l=data_l.cpu().data.numpy().transpose((1,2,0))
     conv8_313 = conv8_313[0]
@@ -305,7 +228,6 @@ def decode(data_l, conv8_313, rebalance=1, upscale=2):
     conv8_313_rh = conv8_313 * rebalance
     #print('conv8',conv8_313_rh.size())
     class8_313_rh = F.softmax(conv8_313_rh,dim=0).cpu().data.numpy().transpose((1,2,0))
-    #np.save('class8_313.npy',class8_313_rh)
     class8=np.argmax(class8_313_rh,axis=-1)
     #print('class8',class8.shape)
     cc = np.load(os.path.join(enc_dir, 'pts_in_hull.npy'))

@@ -1,9 +1,6 @@
 import argparse
 import torch
-# from torch.autograd import Variable
-# from skimage.color import lab2rgb
 from model import Color_model
-#from data_loader import ValImageFolder
 import numpy as np
 from skimage.color import rgb2lab, rgb2gray
 import torch.nn as nn 
@@ -11,9 +8,7 @@ from PIL import Image
 import scipy.misc
 from torchvision import datasets, transforms
 from training_layers import decode
-# import torch.nn.functional as F
 import os
-
 
 
 def load_image(image_path, model_output_size, transform=None):
@@ -29,6 +24,7 @@ def load_image(image_path, model_output_size, transform=None):
     image=torch.from_numpy(image).unsqueeze(0)
     
     return image,image_small
+
 
 def validate(dataset, ckpt, new_arch):
     print ("Validate: ",dataset, "\n",ckpt)
@@ -48,8 +44,6 @@ def validate(dataset, ckpt, new_arch):
     ])
 
     data_dir = "../data/val"
-    shutil.rmtree('../data/colorimg')
-    os.mkdir('../data/colorimg')
     dirs=os.listdir(data_dir)
     color_model = nn.DataParallel(Color_model(new_arch=new_arch)).cuda().eval()
     color_model.load_state_dict(torch.load(ckpt))
@@ -67,10 +61,11 @@ def validate(dataset, ckpt, new_arch):
         color_name = '../data/colorimg/' + file
         scipy.misc.imsave(color_name, color_img*255.)
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--new_arch', type=int, default=1)
-    parser.add_argument('--ckpt', type = str, default = '../model/models/model-55-512.ckpt', help = 'path for ckpt models')
+    parser.add_argument('--new_arch', type=int, default=0)
+    parser.add_argument('--ckpt', type = str, default = '../model/models/128x128_orig_arch/model-new0-100-640.ckpt', help = 'path for ckpt models')
     parser.add_argument('--dataset', type = str, default = 'ImageNet128', help = 'ImageNet128, ImageNet64')
     args = parser.parse_args()
     print(args)

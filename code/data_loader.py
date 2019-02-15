@@ -22,6 +22,7 @@ class TrainImageFolder(data.Dataset):
         self.transform=transform
         self.data_dir=data_dir
         self.model_output_size = model_output_size
+
     def __getitem__(self, index):
         try:
             img=Image.open(self.data_dir+'/'+self.file_list[index])
@@ -55,19 +56,3 @@ class TrainImageFolder(data.Dataset):
     def __len__(self):
         return len(self.file_list)
 
-#
-# class ValImageFolder(data.Dataset):
-#     def __init__(self,data_dir):
-#         self.file_list=os.listdir(data_dir)
-#         self.data_dir=data_dir
-#
-#     def __getitem__(self, index):
-#         img=Image.open(self.data_dir+'/'+self.file_list[index])
-#         img_scale = scale_transform(img)
-#         img_scale = np.asarray(img_scale)
-#         img_scale = rgb2gray(img_scale)
-#         img_scale = torch.from_numpy(img_scale)
-#         return img_scale
-#
-#     def __len__(self):
-#         return len(self.file_list)
