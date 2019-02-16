@@ -1,0 +1,2 @@
+Save validation images in a 'val' Folder, Output for Colorization NN will be stroed in 'colorimg' folder
+Place the train images in a directory e.g. 'imagenet_20classes_128x128'
