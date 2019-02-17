@@ -13,6 +13,8 @@ python ./train.py --update_lr 1 --new_arch 0 --num_epochs 100 --dataset "ImageNe
 
 ## Training from check point
 
+For example
+
 python ./train.py --update_lr 1 --new_arch 0 --ckpt ../model/models/model-new0-51-512.ckpt --num_epochs 1 --dataset "ImageNet64" --image_dir "../data/imagenet_20classes_64x64"
 
 ### Train Parameters
@@ -40,6 +42,13 @@ Validation images Folder: '../data/val/'
 Inferenced images will be saved to folder: '../data/colorimg/'
 
 python ./sample_imagenet.py --new_arch 0 --ckpt ../model/models/128x128_orig_arch/model-new0-100-640.ckpt
+
+## Pre-Trained Models
+We provied two Pre-Trained Model (unzip first)
+
+* Compact Model provied in 'model/models/128x128_orig_arch/'
+* Dilated Model provied in 'model/models/128x128_new_arch/'
+
 
 ### Validation Parameters
 
