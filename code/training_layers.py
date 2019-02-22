@@ -146,7 +146,7 @@ def unflatten_2d_array(pts_flt, pts_nd, axis=1, squeeze=False):
     return pts_out
 
 
-def non_gray_mask(self, bottom):
+def non_gray_mask(bottom):
     ''' Layer outputs a mask based on if the image is grayscale or not '''
     bottom=bottom.numpy()
     # if an image has any (a,b) value which exceeds threshold, output 1
