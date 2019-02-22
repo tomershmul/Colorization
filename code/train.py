@@ -3,10 +3,9 @@ import os
 import torch
 import torch.nn as nn
 from torchvision import transforms
-from training_layers import PriorBoostLayer, NNEncLayer, NonGrayMaskLayer
+from training_layers import PriorFactor, NNEncLayer, non_gray_mask
 from data_loader import TrainImageFolder
 from model import Color_model
-#from sample_imagenet import validate
 import time
 import re
 
@@ -47,13 +46,12 @@ def main(args):
 
 
     encode_layer=NNEncLayer()
-    boost_layer=PriorBoostLayer()
-    nongray_mask=NonGrayMaskLayer()
     # Loss and optimizer
     criterion = nn.CrossEntropyLoss(reduce=False).cuda()
     params = list(model.parameters())
     optimizer = torch.optim.Adam(params, lr = args.learning_rate, betas=(0.9, 0.99), weight_decay=1e-3)
-    
+    prior_factor = PriorFactor(alpha=1., gamma=.5, priorFile=os.path.join('./resources/', 'prior_probs.npy'))
+
 
     # Train the models
     total_step = len(data_loader)
@@ -73,11 +71,13 @@ def main(args):
                     # Set mini-batch dataset
                     images = images.unsqueeze(1).float().cuda()
                     img_ab = img_ab.float()
+                    # Encode Y to Z
                     encode,max_encode=encode_layer.forward(img_ab)
                     targets=torch.Tensor(max_encode).long().cuda()
-                    boost=torch.Tensor(boost_layer.forward(encode)).float().cuda()
-                    mask=torch.Tensor(nongray_mask.forward(img_ab)).float().cuda()
+                    boost=torch.Tensor(prior_factor.forward(encode)).float().cuda()
+                    mask=torch.Tensor(non_gray_mask(img_ab)).float().cuda()
                     boost_nongray=boost*mask
+                    # Run CNN Input to Z^
                     outputs = model(images)
     
                     loss = (criterion(outputs,targets)*(boost_nongray.squeeze(1))).mean()

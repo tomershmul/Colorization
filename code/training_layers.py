@@ -1,79 +1,9 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 import numpy as np
-import torch.nn.functional as F
 import os
 import sklearn.neighbors as nn
-from skimage import color
 
-
-class NNEncLayer(object):
-    ''' Layer which encodes ab map into Q colors
-    OUTPUTS
-        top[0].data     NxQ
-    '''
-
-    def __init__(self):
-        self.NN = 3
-        self.sigma = 5
-        self.ENC_DIR = './resources/'
-        self.nnenc = NNEncode(self.NN, self.sigma, km_filepath=os.path.join(self.ENC_DIR, 'pts_in_hull.npy'))
-
-    def forward(self, x):
-        encode=self.nnenc.encode_points_mtx_nd(x)
-        max_encode=np.argmax(encode,axis=1).astype(np.int32)
-        return encode,max_encode
-
-
-class PriorBoostLayer(object):
-    ''' Layer boosts ab values based on their rarity
-    INPUTS
-        bottom[0]       NxQxXxY
-    OUTPUTS
-        top[0].data     Nx1xXxY
-    '''
-
-    def __init__(self, ENC_DIR='./resources/', gamma=0.5, alpha=1.0):
-        self.ENC_DIR = './resources/'
-        self.gamma = .5
-        self.alpha = 1.
-        self.pc = PriorFactor(self.alpha, gamma=self.gamma, priorFile=os.path.join(self.ENC_DIR, 'prior_probs.npy'))
-
-        self.X = 64
-        self.Y = 64
-
-    def forward(self, bottom):
-        return self.pc.forward(bottom, axis=1)
-
-
-class NonGrayMaskLayer(object):
-    ''' Layer outputs a mask based on if the image is grayscale or not
-    INPUTS
-        bottom[0]       Nx2xXxY     ab values
-    OUTPUTS
-        top[0].data     Nx1xXxY     1 if image is NOT grayscale
-                                    0 if image is grayscale
-    '''
-
-    def setup(self, bottom, top):
-        if len(bottom) == 0:
-            raise Exception("Layer should have inputs")
-
-        self.thresh = 5  # threshold on ab value
-        self.N = bottom.data.shape[0]
-        self.X = bottom.data.shape[2]
-        self.Y = bottom.data.shape[3]
-
-    def forward(self, bottom):
-        bottom=bottom.numpy()
-        # if an image has any (a,b) value which exceeds threshold, output 1
-        return (np.sum(np.sum(np.sum((np.abs(bottom) > 5).astype('float'), axis=1), axis=1), axis=1) > 0)[:,
-                           na(), na(), na()].astype('float')
-
-
-# ***************************
-# ***** SUPPORT CLASSES *****
-# ***************************
 
 
 class PriorFactor():
@@ -105,32 +35,33 @@ class PriorFactor():
         self.prior_factor = self.prior_mix ** -self.alpha
         self.prior_factor = self.prior_factor / np.sum(self.prior_probs * self.prior_factor)  # re-normalize
 
-        # implied empirical prior
-        self.implied_prior = self.prior_probs * self.prior_factor
-        self.implied_prior = self.implied_prior / np.sum(self.implied_prior)  # re-normalize
-
     def forward(self, data_ab_quant, axis=1):
         data_ab_maxind = np.argmax(data_ab_quant, axis=axis)
         corr_factor = self.prior_factor[data_ab_maxind]
-        if (axis == 0):
-            return corr_factor[na(), :]
-        elif (axis == 1):
-            return corr_factor[:, na(), :]
-        elif (axis == 2):
-            return corr_factor[:, :, na(), :]
-        elif (axis == 3):
-            return corr_factor[:, :, :, na()]
+        return corr_factor[:, na(), :]
+
+class NNEncLayer(object):
+    ''' Layer which encodes ab map into Q colors
+    OUTPUTS
+        top[0].data     NxQ
+    '''
+
+    def __init__(self):
+        self.NN = 3
+        self.sigma = 5
+        self.ENC_DIR = './resources/'
+        self.nnenc = NNEncode(self.NN, self.sigma, km_filepath=os.path.join(self.ENC_DIR, 'pts_in_hull.npy'))
+
+    def forward(self, x):
+        encode=self.nnenc.encode_points_mtx_nd(x)
+        max_encode=np.argmax(encode,axis=1).astype(np.int32)
+        return encode,max_encode
 
 
 class NNEncode():
     ''' Encode points using NN search and Gaussian kernel '''
 
     def __init__(self, NN, sigma, km_filepath):
-        # if (check_value(cc, -1)):
-        #     self.cc = np.load(km_filepath)
-        # else:
-        #     self.cc = cc
-
         self.cc = np.load(km_filepath)
         self.K = self.cc.shape[0]
         self.NN = int(NN)
@@ -148,8 +79,6 @@ class NNEncode():
             self.alreadyUsed = True
             self.pts_enc_flt = np.zeros((P, self.K))
             self.p_inds = np.arange(0, P, dtype='int')[:, na()]
-
-        P = pts_flt.shape[0]
 
         (dists, inds) = self.nbrs.kneighbors(pts_flt)
 
@@ -217,30 +146,10 @@ def unflatten_2d_array(pts_flt, pts_nd, axis=1, squeeze=False):
     return pts_out
 
 
-def decode(data_l, conv8_313, rebalance=1, upscale=2):
-    ''' upscale==4 for imagenet, upscale==2 for cifar'''
-    #print('data_l',type(data_l))
-    #print('shape',data_l.shape)
-    data_l=data_l[0]+50
-    data_l=data_l.cpu().data.numpy().transpose((1,2,0))
-    conv8_313 = conv8_313[0]
-    enc_dir = './resources'
-    conv8_313_rh = conv8_313 * rebalance
-    #print('conv8',conv8_313_rh.size())
-    class8_313_rh = F.softmax(conv8_313_rh,dim=0).cpu().data.numpy().transpose((1,2,0))
-    class8=np.argmax(class8_313_rh,axis=-1)
-    #print('class8',class8.shape)
-    cc = np.load(os.path.join(enc_dir, 'pts_in_hull.npy'))
-    #data_ab = np.dot(class8_313_rh, cc)
-    data_ab=cc[class8[:][:]]
-    #data_ab=np.transpose(data_ab,axes=(1,2,0))
-    #data_l=np.transpose(data_l,axes=(1,2,0))
-    #data_ab = resize(data_ab, (224, 224,2))
-    data_ab=data_ab.repeat(upscale, axis=0).repeat(upscale, axis=1)
+def non_gray_mask(self, bottom):
+    ''' Layer outputs a mask based on if the image is grayscale or not '''
+    bottom=bottom.numpy()
+    # if an image has any (a,b) value which exceeds threshold, output 1
+    return (np.sum(np.sum(np.sum((np.abs(bottom) > 5).astype('float'), axis=1), axis=1), axis=1) > 0)[:,
+                       na(), na(), na()].astype('float')
 
-    # print('data_l.shpae', data_l.shape)
-    # print('data_ab.shpae', data_ab.shape)
-    img_lab = np.concatenate((data_l, data_ab), axis=-1)
-    img_rgb = color.lab2rgb(img_lab)
-
-    return img_rgb

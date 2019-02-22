@@ -1,12 +1,9 @@
 from torchvision import datasets, transforms
 from skimage.color import rgb2lab, rgb2gray, gray2rgb
-# from skimage import io
+from PIL import Image
 import torch.utils.data as data
 import torch
-# import torch.nn as nn
-# import torch.nn.functional as F
 import numpy as np
-from PIL import Image
 import os
 
 scale_transform = transforms.Compose([

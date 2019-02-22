@@ -7,24 +7,45 @@ import torch.nn as nn
 from PIL import Image
 import scipy.misc
 from torchvision import datasets, transforms
-from training_layers import decode
 import os
+import torch.nn.functional as F
+from skimage import color
 
 
 def load_image(image_path, model_output_size, transform=None):
+    ''' Transform image + convert to L-ab color space'''
     image = Image.open(image_path)
     
     if transform is not None:
         image = transform(image)
     if image.mode != 'RGB':
         image = image.convert('RGB')
-    image_small=transforms.Resize(model_output_size)(image)
-    image_small=np.expand_dims(rgb2lab(image_small)[:,:,0],axis=-1)
     image=rgb2lab(image)[:,:,0]-50.
     image=torch.from_numpy(image).unsqueeze(0)
     
-    return image,image_small
+    return image
 
+def decode(data_l, conv8_313, upscale=2):
+    ''' upscale==4 for imagenet orig, upscale==2 for otherwise'''
+    resources_dir = './resources'
+    # bias level
+    data_l=data_l[0]+50
+    data_l=data_l.cpu().data.numpy().transpose((1,2,0))
+    conv8_313 = conv8_313[0]
+    # Soft-max
+    class8_313 = F.softmax(conv8_313,dim=0).cpu().data.numpy().transpose((1,2,0))
+    # Take arg-max
+    class8=np.argmax(class8_313,axis=-1)
+    # Take quantization
+    cc = np.load(os.path.join(resources_dir, 'pts_in_hull.npy'))
+    data_ab=cc[class8[:][:]]
+    # Upscale NN
+    data_ab=data_ab.repeat(upscale, axis=0).repeat(upscale, axis=1)
+    # Concat with L-channel
+    img_lab = np.concatenate((data_l, data_ab), axis=-1)
+    img_rgb = color.lab2rgb(img_lab)
+
+    return img_rgb
 
 def validate(dataset, ckpt, new_arch):
     print ("Validate: ",dataset, "\n",ckpt)
@@ -49,15 +70,15 @@ def validate(dataset, ckpt, new_arch):
     color_model.load_state_dict(torch.load(ckpt))
      
     for file in dirs:
-        image,image_small=load_image(data_dir+'/'+file, model_output_size=model_output_size, transform=scale_transform) #TODO CIFAR 32, imagenet 56
+        # Load image
+        image=load_image(data_dir+'/'+file, model_output_size=model_output_size, transform=scale_transform)
         image=image.unsqueeze(0).float().cuda()
-        img_ab_313=color_model(image)
-        # out_max=np.argmax(img_ab_313[0].cpu().data.numpy(),axis=0)
-        # print('out_max',set(out_max.flatten()))
+        # Run CNN model
         print(file)
-        # print('image.shape', image.shape)
-        # print('img_ab_313.shape', img_ab_313.shape)
+        img_ab_313=color_model(image)
+        # Feed-Forward
         color_img = decode(image, img_ab_313, upscale=upscale)
+        # Save image
         color_name = '../data/colorimg/' + file
         scipy.misc.imsave(color_name, color_img*255.)
 
