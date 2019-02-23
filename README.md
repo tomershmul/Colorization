@@ -2,7 +2,18 @@
 
 Implementation of https://arxiv.org/pdf/1603.08511.pdf
 
+![](./ReadmeImages/NN.PNG)
+
+## Architecture 1 Results
+![](./ReadmeImages/Arch1.png)
+
+## Architecture 2 Results
+![](./ReadmeImages/Arch2.png)
+
 # Train
+
+![](./ReadmeImages/ObjFunc.PNG)
+
 Training example
 
 Train images Folder: '../data/imagenet_20classes_128x128/'
@@ -37,6 +48,9 @@ python ./train.py --update_lr 1 --new_arch 0 --ckpt ../model/models/model-new0-5
 
 
 # Validation
+
+![](./ReadmeImages/inference.PNG)
+
 Validation example
 Validation images Folder: '../data/val/'
 Inferenced images will be saved to folder: '../data/colorimg/'
@@ -46,8 +60,8 @@ python ./sample_imagenet.py --new_arch 0 --ckpt ../model/models/128x128_orig_arc
 ## Pre-Trained Models
 We provied two Pre-Trained Model (unzip first)
 
-* Compact Model provied in 'model/models/128x128_orig_arch/'
-* Dilated Model provied in 'model/models/128x128_new_arch/'
+* Architecture 1 Model provied in 'model/models/128x128_orig_arch/'
+* Architecture 2 Model provied in 'model/models/128x128_new_arch/'
 
 
 ### Validation Parameters
